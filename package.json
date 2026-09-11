@@ -13,7 +13,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "archive-substack": "node scripts/archive-substack.mjs",
-    "check-a11y": "node scripts/check-accessibility.mjs"
+    "check-a11y": "node scripts/check-accessibility.mjs",
+    "relock": "node scripts/relock.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.1",

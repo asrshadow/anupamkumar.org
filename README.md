@@ -69,6 +69,21 @@ npm run archive-substack   # pull any new Substack posts into content/external/
 dark theme, and at phone width, failing if anything breaks. The same check runs
 automatically on every push.
 
+### After adding or removing any dependency
+
+```bash
+npm run relock
+```
+
+This rewrites `package-lock.json` from nothing, then tells you what to commit.
+
+**Why it is needed.** A few packages ship different code for different operating systems.
+When `npm install` updates an existing lock file on Windows, it can drop the entries that
+only Linux needs. GitHub's build machines run Linux, so the next build fails with
+`npm ci can only install packages when your package.json and package-lock.json are in
+sync`. Nothing is wrong with the site; the lock file is just incomplete. Writing it from
+scratch records every platform.
+
 ## Publishing
 
 Pushing to `main` publishes the site. Nothing else is needed.
