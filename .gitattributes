@@ -1,0 +1,31 @@
+# How Git should treat line endings.
+#
+# Windows ends a line with two invisible characters; Linux and macOS use one.
+# GitHub's build machines run Linux. Without this file, files written here would
+# arrive there with the wrong endings, which breaks some tools quietly.
+#
+# "text=auto eol=lf" means: store every text file with Linux endings, which is
+# what the build machine and the published site expect.
+
+* text=auto eol=lf
+
+# Files that must never be altered, because a changed byte breaks them or
+# because they are records that have to stay exactly as downloaded.
+public/CNAME text eol=lf
+
+# Raw source data is immutable. Git must not touch a single byte of it.
+data/**/raw/** -text -diff
+
+# Binary formats, so Git does not try to treat them as text.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.pdf  binary
+*.xlsx binary
+*.xls  binary
+*.parquet binary
+*.woff  binary
+*.woff2 binary

@@ -1,0 +1,42 @@
+# Files Git should never track.
+# Anything listed here stays on this computer and is never uploaded to GitHub.
+
+# ---- Installed program code -------------------------------------------------
+# node_modules is downloaded by "npm install" and can always be recreated.
+# It is enormous, so it never belongs in the repository.
+node_modules/
+
+# ---- Build output -----------------------------------------------------------
+# These folders are produced by "npm run build". They are rebuilt every time,
+# so storing them would only create noise in the history.
+dist/
+.astro/
+
+# Pagefind writes the search index into the build output.
+public/pagefind/
+
+# ---- Operating system clutter -----------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ---- Secrets ----------------------------------------------------------------
+# Environment files are the usual place a password or key accidentally lands.
+# Excluding them is a safety net, NOT permission to create one. See CLAUDE.md
+# rule 1: no secret enters this repository at all, in any file.
+.env
+.env.*
+
+# ---- Python and R working files ---------------------------------------------
+*.ipynb_checkpoints
+__pycache__/
+*.pyc
+.Rhistory
+.RData
+.Rproj.user/
+
+# ---- Survey microdata -------------------------------------------------------
+# Unit-level survey files often carry redistribution restrictions and are large.
+# CLAUDE.md section 6.9 forbids committing them anywhere in this repository.
+data/**/microdata/
+*.dta
+*.sav
