@@ -6,9 +6,16 @@
 #     gh workflow run accessibility-check.yml
 #
 # WHAT IT DOES
-# Builds the site, serves it locally on the build machine, and
-# runs every page through Axe, the standard accessibility testing
-# engine. If it finds a violation, THE RUN FAILS.
+# Builds the site and runs every page through Axe, the standard
+# accessibility testing engine. Each page is checked three times:
+# in the light theme, in the dark theme, and at 360 pixels wide.
+# It also checks that no page scrolls sideways at phone width.
+# If anything fails, THE RUN FAILS.
+#
+# The checking itself lives in scripts/check-accessibility.mjs,
+# so the same command runs here and on your own machine:
+#     npm run build
+#     npm run check-a11y
 #
 # HONEST LIMITS, WHICH MATTER
 # An automated check finds roughly a third of accessibility
@@ -60,38 +67,17 @@ jobs:
       - name: Build the site
         run: npm run build
 
-      # Serves the built site on the build machine so the checker
-      # has real pages to open, exactly as a reader would see them.
-      # "&" puts it in the background so the next step can run, and
-      # the wait loop gives it a moment to start.
-      - name: Serve the built site
-        run: |
-          npx --yes serve dist --listen 4321 --no-clipboard &
-          for i in $(seq 1 30); do
-            if curl --silent --fail http://localhost:4321/ > /dev/null; then
-              echo "The site is being served."
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "The site did not start in time."
-          exit 1
+      # Puppeteer downloads a browser that matches the version it
+      # expects. That is why the check uses it rather than the axe
+      # command line tool: that tool relies on whatever Chrome the
+      # build machine happens to have, and the run fails whenever
+      # GitHub updates it.
+      - name: Install the browser
+        run: npx puppeteer browsers install chrome
 
-      # Check every page the site actually has. These are listed by
-      # hand rather than crawled, so that a page accidentally
-      # dropped from the build is noticed rather than silently
-      # skipped.
+      # Checks every page in light, in dark, and at 360 pixels wide,
+      # and fails the run on any violation. See the top of
+      # scripts/check-accessibility.mjs for what this can and
+      # cannot see.
       - name: Run the accessibility checks
-        run: |
-          npx --yes @axe-core/cli@4 \
-            --exit \
-            --tags wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa \
-            http://localhost:4321/ \
-            http://localhost:4321/writing/ \
-            http://localhost:4321/notes/ \
-            http://localhost:4321/about/ \
-            http://localhost:4321/contact/ \
-            http://localhost:4321/now/ \
-            http://localhost:4321/search/ \
-            http://localhost:4321/404.html \
-            http://localhost:4321/writing/hello/
+        run: npm run check-a11y

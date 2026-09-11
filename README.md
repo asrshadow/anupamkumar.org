@@ -55,6 +55,35 @@ npm run preview   # serve what build produced, to check it before pushing
 
 `npm run dev` reloads the page whenever a file is saved. Press `Ctrl+C` to stop it.
 
+**Search only works after a build.** The search index is built by `npm run build`, not by
+`npm run dev`, so to try search use `npm run build` and then `npm run preview`.
+
+Two more commands, both of which need `npm run build` to have been run first:
+
+```bash
+npm run check-a11y         # check every page for accessibility problems
+npm run archive-substack   # pull any new Substack posts into content/external/
+```
+
+`check-a11y` opens every page in a real browser and checks it in the light theme, in the
+dark theme, and at phone width, failing if anything breaks. The same check runs
+automatically on every push.
+
+## Publishing
+
+Pushing to `main` publishes the site. Nothing else is needed.
+
+```bash
+git status                              # what changed? Always safe to run
+git add .                               # stage everything
+git commit -m "essay: add the GST piece"
+git push                                # this publishes
+gh run watch                            # watch the build, without opening a browser
+```
+
+The Source Control panel in VS Code does the staging and committing with buttons, if that
+is easier than typing the commands.
+
 ---
 
 ## The speed budget

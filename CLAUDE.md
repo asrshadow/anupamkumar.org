@@ -36,10 +36,11 @@ purpose is to **simplify economic information for a general audience**.
 
 | | |
 |---|---|
-| **Domain** | `anupamkumar.org` (canonical, permanent — never changes) |
+| **Domain** | `anupamkumar.org` (canonical, permanent — never changes). Registrar: **Namecheap**, not Cloudflare. Email forwarding for `hello@anupamkumar.org` is Namecheap's. |
+| **Repository** | `asrshadow/anupamkumar.org`, public. A custom domain serves a project repository at the domain root, so Astro needs no `base` setting. |
 | **Host** | GitHub Pages (treated as disposable and replaceable) |
 | **Framework** | Astro (static site generation) |
-| **Newsletter** | Substack (distribution only, never an archive) |
+| **Newsletter** | Substack at `asranupam.substack.com` (distribution only, never an archive) |
 | **Tool compute** | Runs entirely in the visitor's browser |
 | **Content language** | English only, with URLs designed so a `/hi/` tree can be added later |
 | **Budget** | Static hosting and free tiers only. No servers, no paid cloud services. |
@@ -95,12 +96,24 @@ economic reasoning. Substantive disagreement on method or interpretation is welc
 
 ### What is installed on his machine
 
-Installed and working: **Python, R, Git Bash, VS Code** (used mainly for Jupyter notebooks).
+Verified on 11 September 2026:
 
-**Not installed: Node.js.** Astro requires it. Before any site work begins, he needs to
-install Node.js LTS from <https://nodejs.org> and confirm it worked by running
-`node --version` and `npm --version` in Git Bash. Do not write build instructions that
-assume Node exists until this is confirmed.
+| Tool | Version | Notes |
+|---|---|---|
+| Node.js | 24.13.0 | Installed and working. Astro needs it. |
+| npm | 11.6.2 | |
+| Git | 2.53.0 | Configured as `asrshadow` / `anupamskywalker@gmail.com` |
+| GitHub CLI (`gh`) | 2.100.0 | Signed in as `asrshadow`. At `C:\Program Files\GitHub CLI\gh.exe` |
+| Python | 3.11.5 | |
+| R | installed | |
+| VS Code | installed | Where the work happens |
+| Google Chrome | installed | Used by the accessibility checks |
+
+**`gh` is a separate program from Git Bash.** Git Bash is a terminal window; `gh` is a
+program that runs inside one. It does everything on GitHub from the terminal — creating
+repositories, watching builds, reading logs — so nothing needs the website.
+
+Still check before assuming any *other* tool is present, and include the install step.
 
 ---
 
@@ -1075,6 +1088,14 @@ relay, and both break without warning. Never make anything depend on one.
 `scripts/archive-substack.mjs` reads the **public RSS feed** only, and must degrade
 gracefully: if the feed is unreachable, the build still succeeds.
 
+The feed is `https://asranupam.substack.com/feed`.
+
+> **A trap worth knowing about.** `anupamkumar.substack.com` also exists and belongs to a
+> **different Anupam Kumar**, a tech policy researcher writing on data, AI and
+> sustainability. Pointing the archiver at that address would publish another person's
+> writing under this site's name. The address is set once, as a named constant at the top
+> of the archiver, with a warning comment beside it.
+
 Files in `content/external/` are generated. Never hand-edit them.
 
 ---
@@ -1246,18 +1267,47 @@ data/**/microdata/
 
 ## 16. Current state
 
-**Phase 0 — claiming the permanent layer.**
+**Phase 1 — the writing site.** Phase 0 is complete.
 
-- [ ] Register `anupamkumar.org`, ten years, registrar lock and auto-renew on
-- [ ] Set up `hello@anupamkumar.org` email forwarding
-- [ ] Install Node.js LTS and confirm with `node --version`
-- [ ] Create the repository, the folder skeleton and the three licence files
-- [ ] Create all eight `data/` group folders plus `_reference/` and `_templates/`, each
-      with a README saying what belongs there
-- [ ] Write `src/styles/tokens.css` from §8
-- [ ] Add `deploy.yml` and put a single static page up so the domain resolves
+### Phase 0 — the permanent layer (done, 11 September 2026)
 
-Update this section as phases complete. The full roadmap is in the architecture blueprint.
+- [x] `anupamkumar.org` registered at Namecheap, locked, auto-renew on
+- [x] DNS pointed at GitHub Pages: four A records, four AAAA records, `www` CNAME
+- [x] `hello@anupamkumar.org` forwarding set up through Namecheap
+- [x] Node.js confirmed installed; GitHub CLI installed and signed in
+- [x] Repository `asrshadow/anupamkumar.org` created, public, issues and wiki off
+- [x] Folder skeleton, three licence files, `.gitignore` and `.gitattributes`
+- [x] All eight `data/` group folders plus `_reference/` and `_templates/`, each with a
+      README saying what belongs there
+- [x] `src/styles/tokens.css` written from §8
+- [x] `deploy.yml` publishing on every push
+
+### Phase 1 — writing only, no tools (mostly done)
+
+- [x] Astro with content collections for essays, notes and archived Substack posts
+- [x] Home, writing, notes, about, contact, now, search, tag and 404 pages
+- [x] RSS feed, sitemap, Pagefind search, dark mode with no flash on load
+- [x] Substack RSS archiver and its daily workflow
+- [x] Accessibility check and dead-link check workflows
+- [ ] **Four real pieces published.** This is the remaining item, and it is the point of
+      the phase. A site with four good essays and no tools is a real site; a site with
+      three tools and no writing is a portfolio of unfinished experiments.
+- [ ] Delete the two placeholder pieces once real writing exists:
+      `content/essays/11-09-2026-hello.md` and
+      `content/notes/11-09-2026-what-notes-are-for.md`
+
+### Verified at the end of Phase 1
+
+- Zero accessibility violations across all ten pages, checked with Axe against
+  WCAG 2.0, 2.1 and 2.2 at level AA
+- No sideways scrolling on any page at 360px or 320px wide, in both themes
+- Deleting `src/tools/` still builds, so the one-way import rule holds before the first
+  tool exists
+- An essay page ships no JavaScript beyond two small inline scripts, and about 100 KB of
+  fonts, against a budget of 250 KB total
+
+**Resist building a tool until the writing exists.** Phase 2 is the data layer, Phase 3
+the first two tools. The full roadmap is in the architecture blueprint.
 
 ---
 
