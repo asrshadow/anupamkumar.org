@@ -1,0 +1,25 @@
+---
+// ============================================================
+// /notes/<slug>/ — one note.
+// ============================================================
+
+import PieceLayout from "../../layouts/PieceLayout.astro";
+import { getNotes } from "../../lib/writing";
+import { render } from "astro:content";
+
+export async function getStaticPaths() {
+  const notes = await getNotes();
+
+  return notes.map((note) => ({
+    params: { slug: note.slug },
+    props: { piece: note },
+  }));
+}
+
+const { piece } = Astro.props;
+const { Content } = await render(piece.entry);
+---
+
+<PieceLayout piece={piece}>
+  <Content />
+</PieceLayout>

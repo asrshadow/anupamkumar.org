@@ -1,0 +1,282 @@
+/* ==========================================================================
+   DESIGN TOKENS
+   Every colour, type size, spacing step and corner radius used anywhere on
+   this site is defined once, here.
+
+   The rule: nothing in this codebase may use a value that is not a token
+   below. If something needs a value that does not exist yet, add it here
+   first. Hard-coding a colour is how a design system quietly stops being one.
+
+   A token is written as --name: value, and used elsewhere as var(--name).
+   ========================================================================== */
+
+/* ==========================================================================
+   1. COLOUR — LIGHT THEME
+   The dark theme further down redefines these SAME names, so no component
+   ever has to know which theme is active.
+   Contrast ratios in the comments are measured against the paper colour.
+   WCAG AA needs 4.5:1 for body text and 3:1 for large text and control
+   borders. AAA needs 7:1.
+   ========================================================================== */
+
+:root {
+  /* --- Surfaces ----------------------------------------------------------
+     Off-white, never pure white. This is the single biggest lever on eye
+     comfort during long reading — bigger than any choice of hue.          */
+  --colour-paper: #f7f7f4; /* the page background */
+  --colour-surface: #ffffff; /* cards, tables, raised areas */
+  --colour-surface-sunk: #f1f1ed; /* code blocks, inset panels */
+
+  /* --- Ink ---------------------------------------------------------------
+     Text colours. Two only: full strength, and muted for supporting text. */
+  --colour-ink: #16191c; /* body text.     16.4:1 — AAA */
+  --colour-ink-muted: #5c6470; /* captions, dates. 5.6:1 — AA  */
+
+  /* --- Lines ------------------------------------------------------------- */
+  --colour-rule: #dcddd7; /* decorative dividers and table rules */
+  --colour-border-input: #767b72; /* borders of things you can click.
+                                     4.0:1, above the 3:1 WCAG 2.2 minimum
+                                     for the boundary of a control. */
+
+  /* --- Accent — deep pine green. The ONLY brand colour. -------------------
+     Used for links, focus rings, banner rails and the current navigation
+     item. Nothing else. Deliberately not blue: blue is the reflexive
+     default for institutional and data sites, to the point where it no
+     longer signals anything.
+     NEVER used inside a chart.                                            */
+  --colour-accent: #1d6049; /* 6.9:1 — comfortably AA */
+  --colour-accent-soft: #e8f0ea; /* background of banners and callouts */
+
+  /* --- Fiscal polarity ---------------------------------------------------
+     Rust to blue, NOT red to green. The red/green ledger convention is
+     invisible to roughly one man in twelve. Warm reads as negative, cool
+     as positive, and the pair stays distinguishable with any common colour
+     vision deficiency.                                                     */
+  --colour-deficit: #9a4a16; /* 5.8:1 — AA */
+  --colour-surplus: #1a5f9e; /* 6.2:1 — AA */
+  --colour-neutral-mid: #e5e4de; /* midpoint of a diverging scale */
+
+  /* --- Status — reserved. Never reused as a chart series colour. --------- */
+  --colour-good: #1d6049; /* the same green as the accent: one idea, one colour */
+  --colour-warning: #8a6410;
+  --colour-serious: #9a4a16;
+  --colour-critical: #97263c;
+
+  /* --- Chart series, in fixed order. NEVER cycle, never generate a 7th. ---
+     A separate palette from the site chrome above, and the two never mix.
+     Validated for lightness band, chroma floor, separation under colour
+     vision deficiency, separation under normal vision, and 3:1 contrast
+     against the chart surface.
+     A seventh series folds into "Other", becomes small multiples, or the
+     chart gets split.                                                      */
+  --chart-1: #1a6ca8; /* blue   */
+  --chart-2: #c1590a; /* orange */
+  --chart-3: #00876c; /* green  */
+  --chart-4: #b2649b; /* mauve  */
+  --chart-5: #4a93c9; /* sky    */
+  --chart-6: #ad7f14; /* gold   */
+
+  /* --- Chart furniture ---------------------------------------------------- */
+  --chart-grid: #d5d6d0; /* recessive by design — gridlines must not compete */
+  --chart-axis: #5c6470;
+  --chart-surface: #ffffff;
+}
+
+/* ==========================================================================
+   2. COLOUR — DARK THEME
+   Chosen steps, not an automatic inversion. Each value was checked
+   separately against the dark surface.
+
+   This block covers readers whose device is set to dark and who have not
+   chosen otherwise on this site. The :not() guard means an explicit choice
+   of light always wins.
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --colour-paper: #14171a;
+    --colour-surface: #1b1f23;
+    --colour-surface-sunk: #22272c;
+    --colour-ink: #e9eae6; /* 14.9:1 — AAA */
+    --colour-ink-muted: #98a0ab; /*  6.8:1 — AA  */
+    --colour-rule: #2f353b;
+    --colour-border-input: #6b7178; /*  3.7:1 — passes */
+    --colour-accent: #6fbf9a; /*  8.2:1 — AAA */
+    --colour-accent-soft: #182620;
+    --colour-deficit: #e0925f; /*  7.2:1 — AAA */
+    --colour-surplus: #7fb3e3; /*  8.1:1 — AAA */
+    --colour-neutral-mid: #343a40;
+    --colour-good: #6fbf9a;
+    --colour-warning: #d0a43c;
+    --colour-serious: #e0925f;
+    --colour-critical: #e2687f;
+
+    --chart-1: #2e86ce;
+    --chart-2: #d6631c;
+    --chart-3: #009c76;
+    --chart-4: #bf50a1;
+    --chart-5: #4a63d8;
+    --chart-6: #b37100;
+
+    --chart-grid: #2f353b;
+    --chart-axis: #98a0ab;
+    --chart-surface: #1b1f23;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The same dark values again, this time for a reader who pressed the theme
+   toggle. This repetition is deliberate and necessary: the block above only
+   applies when the DEVICE is set to dark, so without this one the toggle
+   could not turn dark mode on for someone whose device is set to light.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme="dark"] {
+  --colour-paper: #14171a;
+  --colour-surface: #1b1f23;
+  --colour-surface-sunk: #22272c;
+  --colour-ink: #e9eae6;
+  --colour-ink-muted: #98a0ab;
+  --colour-rule: #2f353b;
+  --colour-border-input: #6b7178;
+  --colour-accent: #6fbf9a;
+  --colour-accent-soft: #182620;
+  --colour-deficit: #e0925f;
+  --colour-surplus: #7fb3e3;
+  --colour-neutral-mid: #343a40;
+  --colour-good: #6fbf9a;
+  --colour-warning: #d0a43c;
+  --colour-serious: #e0925f;
+  --colour-critical: #e2687f;
+
+  --chart-1: #2e86ce;
+  --chart-2: #d6631c;
+  --chart-3: #009c76;
+  --chart-4: #bf50a1;
+  --chart-5: #4a63d8;
+  --chart-6: #b37100;
+
+  --chart-grid: #2f353b;
+  --chart-axis: #98a0ab;
+  --chart-surface: #1b1f23;
+}
+
+/* ==========================================================================
+   3. TYPOGRAPHY
+   Three families, each carrying a different signal. The research comparing
+   serif with sans on screen is largely null at modern resolutions, so these
+   are chosen for what they CONVENTIONALLY signal, not for reading speed.
+   What does measurably matter is size, line length and line spacing — set
+   below and enforced in base.css.
+   ========================================================================== */
+
+:root {
+  /* Source Serif 4 — essay body and headings. Screen-optimised, generous
+     x-height, open licence. Signals edited and permanent.                  */
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+
+  /* Public Sans — navigation, labels, buttons, tool interfaces. The typeface
+     of the US Web Design System, drawn for public information.             */
+  --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  /* IBM Plex Mono — figures, data tables, code, dataset ids. It has true
+     tabular figures, so digits line up in a column. In a fiscal table that
+     is not decoration: it is how a reader compares magnitudes at a glance. */
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+
+  /* Reserved for a future Hindi section. Do not load until it exists —
+     an unused font file is pure page weight.                              */
+  /* --font-serif-devanagari: "Noto Serif Devanagari", serif;  */
+  /* --font-sans-devanagari:  "Noto Sans Devanagari", sans-serif; */
+
+  /* --- Type scale — fixed. Never use a size that is not on this list. ---- */
+  --size-xs: 0.75rem; /* 12px — table footnotes, source lines */
+  --size-sm: 0.875rem; /* 14px — captions, labels, interface text */
+  --size-base: 1rem; /* 16px — the minimum for anything a reader must read */
+  --size-md: 1.125rem; /* 18px — essay body */
+  --size-lg: 1.375rem; /* 22px — standfirst, h3 */
+  --size-xl: 1.75rem; /* 28px — h2 */
+  --size-2xl: 2.25rem; /* 36px — h1 */
+  --size-3xl: 3rem; /* 48px — the home page only */
+
+  /* --- Line spacing ------------------------------------------------------ */
+  --leading-tight: 1.15; /* headings */
+  --leading-body: 1.65; /* body text — generous, because this is a reading site */
+  --leading-ui: 1.4; /* labels, buttons, table cells */
+
+  /* --- Line length -------------------------------------------------------
+     68 characters. Roughly 65 to 75 is the comfortable band; longer lines
+     measurably hurt reading, because the eye loses its place returning to
+     the start of the next one.                                            */
+  --measure: 68ch;
+}
+
+/* ==========================================================================
+   4. SHAPE
+   Corner radius encodes what a thing IS, so a reader learns the vocabulary
+   without being taught it. Square means record; softened means you can
+   touch it; a pill means metadata.
+   ========================================================================== */
+
+:root {
+  --radius-data: 2px; /* DATA — tables, chart frames, dataset cards, figures.
+                          Square edges say: this is a record, as found.   */
+  --radius-control: 6px; /* INTERACTIVE — buttons, inputs, filters, panels.
+                          Softened edges say: you can touch this.         */
+  --radius-pill: 999px; /* LABEL — tags, status badges, vintage markers.    */
+  --radius-dot: 50%; /* POINT — scatter marks, status dots, timeline nodes. */
+}
+
+/* ==========================================================================
+   5. SPACING
+   One scale, used for every gap, margin and padding on the site.
+   Prefer "gap" on a flex or grid parent over margins on children.
+   ========================================================================== */
+
+:root {
+  --space-1: 0.25rem; /*  4px */
+  --space-2: 0.5rem; /*  8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.5rem; /* 24px */
+  --space-6: 2rem; /* 32px */
+  --space-7: 3rem; /* 48px */
+  --space-8: 4rem; /* 64px */
+  --space-9: 6rem; /* 96px */
+}
+
+/* ==========================================================================
+   6. ELEVATION
+   Shadows are almost never used here. Exactly one level exists, for things
+   that genuinely float above the page: a dropdown, a tooltip, a filter
+   sheet sliding up on a phone. A table is not one of those.
+   ========================================================================== */
+
+:root {
+  --shadow-floating: 0 1px 2px rgba(22, 25, 28, 0.06),
+    0 8px 24px -14px rgba(22, 25, 28, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --shadow-floating: 0 1px 2px rgba(0, 0, 0, 0.4),
+      0 8px 24px -14px rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  --shadow-floating: 0 1px 2px rgba(0, 0, 0, 0.4),
+    0 8px 24px -14px rgba(0, 0, 0, 0.7);
+}
+
+/* ==========================================================================
+   7. LAYOUT
+   The few structural widths the site repeats.
+   ========================================================================== */
+
+:root {
+  --width-page: 1120px; /* the widest the content area ever gets */
+  --width-gutter: var(--space-5); /* the side margin, never less than this */
+}

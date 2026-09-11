@@ -1,0 +1,44 @@
+---
+// ============================================================
+// 404 — the page shown when an address does not exist.
+//
+// Worth writing properly. Most people who land here followed a
+// link from somewhere, so the page should help them rather than
+// tell them off.
+//
+// GitHub Pages serves this file automatically for any unknown
+// address. Nothing has to be configured.
+// ============================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Page not found"
+  description="That address does not exist on this site."
+  noindex={true}
+>
+  <div class="prose">
+    <h1>That page is not here</h1>
+
+    <p>
+      The address you followed does not exist on this site. It may have been
+      mistyped, or the link that brought you here may be wrong.
+    </p>
+
+    <p>
+      Published addresses on this site are not deleted — a retired page keeps its
+      address and says what replaced it. So if you followed a link that used to
+      work, it is worth telling me:
+      <a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a>.
+    </p>
+
+    <h2>Where to go instead</h2>
+
+    <ul>
+      <li><a href="/">The home page</a></li>
+      <li><a href="/writing/">Everything written, newest first</a></li>
+      <li><a href="/search/">Search the whole site</a></li>
+    </ul>
+  </div>
+</BaseLayout>

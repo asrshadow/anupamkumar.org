@@ -1,0 +1,66 @@
+---
+// ============================================================
+// POST META
+// The line under a title: the date, whether it was revised, and
+// where it was first published.
+// ============================================================
+
+import { formatDate, isoDate } from "../lib/writing";
+
+interface Props {
+  date: Date;
+  updated?: Date;
+  /** True when the piece was first published on Substack. */
+  isExternal?: boolean;
+  substackUrl?: string;
+}
+
+const { date, updated, isExternal = false, substackUrl = "" } = Astro.props;
+---
+
+<div class="post-meta">
+  <!-- The time element carries the machine-readable date in its
+       datetime attribute, while showing the human form. -->
+  <time datetime={isoDate(date)}>{formatDate(date)}</time>
+
+  {
+    updated && (
+      <span class="meta-item">
+        Revised <time datetime={isoDate(updated)}>{formatDate(updated)}</time>
+      </span>
+    )
+  }
+
+  {
+    isExternal && (
+      <span class="meta-item badge">
+        First published on
+        {substackUrl ? <a href={substackUrl}>Substack</a> : " Substack"}
+      </span>
+    )
+  }
+</div>
+
+<style>
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-ui);
+  }
+
+  /* A pill, because this is metadata about the piece rather than
+     part of it. The shape says so before the words are read. */
+  .badge {
+    padding: var(--space-1) var(--space-3);
+    background: var(--colour-surface-sunk);
+    border: 1px solid var(--colour-rule);
+    border-radius: var(--radius-pill);
+    font-size: var(--size-xs);
+  }
+</style>

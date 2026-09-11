@@ -1,0 +1,135 @@
+---
+// ============================================================
+// /writing/ — everything written, newest first.
+//
+// Essays, notes and archived Substack pieces are merged into one
+// list, because to a reader they are all just "things he has
+// written". Where each was published shows on the entry itself.
+// ============================================================
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PieceCard from "../../components/PieceCard.astro";
+import { getAllWriting, getAllTags } from "../../lib/writing";
+
+const pieces = await getAllWriting();
+const tags = await getAllTags();
+---
+
+<BaseLayout
+  title="Writing"
+  description="Essays and notes on public finance, public policy, economics and geoeconomics."
+>
+  <header class="page-header">
+    <h1>Writing</h1>
+    <p class="page-intro">
+      Essays and notes on public finance, public policy, economics and
+      geoeconomics. Pieces marked as first published on Substack are archived
+      here so they stay available.
+    </p>
+  </header>
+
+  {
+    tags.length > 0 && (
+      <nav class="tag-nav" aria-label="Browse by subject">
+        <h2 class="tag-nav-heading">Browse by subject</h2>
+        <ul>
+          {tags.map(({ tag, count }) => (
+            <li>
+              <a href={`/tags/${tag}/`}>
+                {tag.replace(/-/g, " ")}
+                <span class="count">{count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+
+  {
+    pieces.length > 0 ? (
+      <div class="piece-list">
+        {pieces.map((piece) => (
+          <PieceCard piece={piece} />
+        ))}
+      </div>
+    ) : (
+      <p class="empty">Nothing published yet.</p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+  }
+
+  .page-intro {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
+  }
+
+  .tag-nav {
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--colour-rule);
+  }
+
+  .tag-nav-heading {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+    margin: 0 0 var(--space-3);
+  }
+
+  .tag-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tag-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 32px;
+    padding: var(--space-1) var(--space-3);
+
+    background: var(--colour-surface-sunk);
+    border: 1px solid var(--colour-rule);
+    border-radius: var(--radius-pill);
+
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+    text-decoration: none;
+    text-transform: capitalize;
+  }
+
+  .tag-nav a:hover {
+    color: var(--colour-accent);
+    border-color: var(--colour-accent);
+  }
+
+  /* The count is a figure, so it is set in mono like every other
+     number on the site. */
+  .count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+  }
+
+  .empty {
+    color: var(--colour-ink-muted);
+  }
+</style>

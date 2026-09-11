@@ -1,0 +1,520 @@
+/* ==========================================================================
+   BASE STYLES
+   How ordinary HTML looks before any component styles it. Everything here
+   uses a token from tokens.css — no raw colours, sizes or spacing values.
+
+   Sections:
+     1. Reset
+     2. Page and typography defaults
+     3. Links and focus
+     4. The skip link
+     5. Running text: the reading measure
+     6. Headings
+     7. Tables — including the rule that keeps phones working
+     8. Code
+     9. Figures, images and quotes
+    10. Forms and buttons
+    11. Reduced motion
+    12. Print
+   ========================================================================== */
+
+/* ==========================================================================
+   1. RESET
+   Browsers disagree about defaults. These few rules settle the ones that
+   matter and leave the rest alone.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  /* Make padding and borders count INSIDE an element's stated width.
+     Without this, adding padding makes a box wider than you asked for,
+     which is the usual cause of a page scrolling sideways on a phone. */
+  box-sizing: border-box;
+}
+
+html {
+  /* Stop iOS enlarging text when a phone is turned sideways. */
+  -webkit-text-size-adjust: 100%;
+
+  /* Jumping to a #section leaves room above it rather than hiding the
+     heading under the top edge of the screen. */
+  scroll-padding-top: var(--space-6);
+}
+
+body {
+  margin: 0;
+}
+
+/* Media should never be wider than the space it is given. This is the
+   second most common cause of sideways scrolling. */
+img,
+picture,
+video,
+canvas,
+svg,
+iframe {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+/* Form controls do not inherit the page font unless told to. */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Long words and URLs break instead of forcing the page wider. */
+p,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/* ==========================================================================
+   2. PAGE AND TYPOGRAPHY DEFAULTS
+   ========================================================================== */
+
+html {
+  /* Tells the browser which theme the page is painted for, so that things
+     the site does not style — scrollbars, form controls — match. */
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--colour-paper);
+  color: var(--colour-ink);
+
+  /* Sans is the default for the interface. Running prose opts into serif
+     in section 5 below. */
+  font-family: var(--font-sans);
+  font-size: var(--size-base);
+  line-height: var(--leading-body);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Never let the page itself scroll sideways. Individual tables and
+     charts scroll inside their own container instead — see section 7. */
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--colour-accent-soft);
+  color: var(--colour-ink);
+}
+
+/* ==========================================================================
+   3. LINKS AND FOCUS
+   ========================================================================== */
+
+a {
+  color: var(--colour-accent);
+
+  /* Underlines are kept. They are the clearest signal that something is a
+     link, and removing them fails the rule that colour alone must never
+     carry meaning. */
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* The focus ring. It marks where you are when moving through the page with
+   the Tab key, and it must never be removed without an equally clear
+   replacement. Test by unplugging the mouse. */
+:focus-visible {
+  outline: 3px solid var(--colour-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-data);
+}
+
+/* ==========================================================================
+   4. THE SKIP LINK
+   The first thing a keyboard or screen reader user reaches on every page.
+   It is invisible until focused, then appears at the top left and jumps
+   past the navigation straight to the content.
+   ========================================================================== */
+
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100;
+
+  padding: var(--space-2) var(--space-4);
+  background: var(--colour-surface);
+  color: var(--colour-ink);
+  border: 2px solid var(--colour-accent);
+  border-radius: var(--radius-control);
+  font-size: var(--size-sm);
+  text-decoration: none;
+
+  /* Moved off the top of the screen until someone focuses it. */
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   5. RUNNING TEXT — THE READING MEASURE
+   Anything inside .prose is an essay or a note: serif, larger, and capped
+   at a comfortable line length.
+   ========================================================================== */
+
+.prose {
+  font-family: var(--font-serif);
+  font-size: var(--size-md);
+  line-height: var(--leading-body);
+
+  /* The single most important typographic setting on the site. Lines longer
+     than roughly 75 characters measurably hurt reading, because the eye
+     loses its place returning to the start of the next line. */
+  max-width: var(--measure);
+}
+
+.prose p {
+  margin: 0 0 var(--space-5);
+
+  /* Avoids a last line containing one lonely word. */
+  text-wrap: pretty;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 var(--space-5);
+  padding-left: var(--space-5);
+}
+
+.prose li {
+  margin-bottom: var(--space-2);
+}
+
+.prose li::marker {
+  color: var(--colour-ink-muted);
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--colour-rule);
+  margin: var(--space-7) 0;
+}
+
+/* ==========================================================================
+   6. HEADINGS
+   One h1 per page, and levels are never skipped — a screen reader user
+   navigates by them, and a gap reads as missing content.
+   ========================================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+
+  /* Spreads a heading evenly across its lines instead of leaving one word
+     stranded on the last line. */
+  text-wrap: balance;
+}
+
+h1 {
+  font-family: var(--font-serif);
+  font-size: var(--size-2xl);
+  font-weight: 700;
+  margin: 0 0 var(--space-4);
+}
+
+h2 {
+  font-family: var(--font-serif);
+  font-size: var(--size-xl);
+  font-weight: 600;
+  margin: var(--space-7) 0 var(--space-3);
+}
+
+h3 {
+  font-family: var(--font-serif);
+  font-size: var(--size-lg);
+  font-weight: 600;
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+/* Below h3, switch to sans in small capitals. A fourth level of serif
+   heading is hard to tell apart from the third. */
+h4 {
+  font-family: var(--font-sans);
+  font-size: var(--size-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--colour-ink-muted);
+  margin: var(--space-6) 0 var(--space-2);
+}
+
+/* The first heading in a block should not push away from what is above it. */
+.prose > :first-child {
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   7. TABLES
+   A table is a record, so it gets square corners, hairline rules and no
+   shadow. It is not a card.
+   ========================================================================== */
+
+/* THE RULE THAT KEEPS PHONES WORKING.
+   A wide table scrolls inside its OWN box. The page never scrolls sideways.
+   Every table in an essay is wrapped in one of these automatically. */
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 0 var(--space-5);
+  border: 1px solid var(--colour-rule);
+  border-radius: var(--radius-data);
+  background: var(--colour-surface);
+
+  /* Tells a screen reader this region can be scrolled, and lets a keyboard
+     user reach it with Tab. Without tabindex, a keyboard user cannot scroll
+     it at all. */
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--size-sm);
+  line-height: var(--leading-ui);
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--colour-rule);
+  vertical-align: top;
+}
+
+thead th {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--colour-ink-muted);
+  background: var(--colour-surface-sunk);
+  white-space: nowrap;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+caption {
+  caption-side: top;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--size-sm);
+  color: var(--colour-ink-muted);
+  border-bottom: 1px solid var(--colour-rule);
+}
+
+/* Figures are mono, with true tabular digits so that columns of numbers
+   line up. In a fiscal table this is how a reader compares magnitudes at a
+   glance, so it is function rather than decoration. */
+td.numeric,
+th.numeric,
+.numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   8. CODE
+   ========================================================================== */
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--colour-surface-sunk);
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--colour-rule);
+  border-radius: var(--radius-data);
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--size-sm);
+  line-height: 1.6;
+  background: var(--colour-surface-sunk);
+  border: 1px solid var(--colour-rule);
+  border-radius: var(--radius-data);
+  padding: var(--space-4);
+  margin: 0 0 var(--space-5);
+
+  /* Code scrolls inside its own box, like a table. */
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ==========================================================================
+   9. FIGURES, IMAGES AND QUOTES
+   ========================================================================== */
+
+figure {
+  margin: var(--space-6) 0;
+}
+
+figcaption {
+  font-family: var(--font-sans);
+  font-size: var(--size-sm);
+  color: var(--colour-ink-muted);
+  line-height: var(--leading-ui);
+  margin-top: var(--space-3);
+}
+
+/* A pull quote is emphasis without a box and without a saturated fill:
+   a rail on the left, square corners, and a soft background. */
+blockquote {
+  margin: var(--space-6) 0;
+  padding: var(--space-4) var(--space-5);
+  border-left: 3px solid var(--colour-accent);
+  background: var(--colour-accent-soft);
+  border-radius: 0 var(--radius-data) var(--radius-data) 0;
+}
+
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   10. FORMS AND BUTTONS
+   Interactive things get softened corners and a visible border, so they
+   look pressable before anyone clicks them.
+   ========================================================================== */
+
+button,
+.button {
+  font-family: var(--font-sans);
+  font-size: var(--size-sm);
+  line-height: var(--leading-ui);
+
+  /* At least 44 by 44 pixels where there is room. WCAG 2.2 sets 24 by 24 as
+     the floor; 44 is what a fingertip actually needs. */
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+
+  background: var(--colour-surface);
+  color: var(--colour-ink);
+  border: 1px solid var(--colour-border-input);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+button:hover,
+.button:hover {
+  background: var(--colour-surface-sunk);
+}
+
+input,
+textarea,
+select {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--colour-surface);
+  border: 1px solid var(--colour-border-input);
+  border-radius: var(--radius-control);
+}
+
+label {
+  display: block;
+  font-size: var(--size-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+/* ==========================================================================
+   11. REDUCED MOTION
+   Some people get motion sickness from animation, and the operating system
+   lets them say so. Honour it without exception.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   12. PRINT
+   A policy site gets printed and turned into PDFs more than most.
+   ========================================================================== */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  /* Navigation, the theme toggle and the footer are useless on paper. */
+  .site-header,
+  .site-footer,
+  .skip-link,
+  .no-print {
+    display: none !important;
+  }
+
+  .prose {
+    max-width: none;
+  }
+
+  /* Print the destination of a link, since a reader cannot click paper. */
+  .prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    word-break: break-all;
+  }
+
+  /* Never split a heading from the text it introduces. */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+}

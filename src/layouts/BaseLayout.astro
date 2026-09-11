@@ -1,0 +1,170 @@
+---
+// ============================================================
+// BASE LAYOUT
+// The shell every page on the site sits inside: the head, the
+// header, the footer, and the fonts.
+//
+// A page hands this three things — a title, a description, and
+// its content — and gets everything else for free.
+// ============================================================
+
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+// Fonts are self-hosted, not fetched from Google. Two reasons:
+// a font service is a third party that can disappear, which would
+// make the "this site outlives its hosting" claim untrue; and a
+// second connection before the first paint is the slowest thing
+// on an otherwise light page.
+//
+// Only the weights actually used are imported, and only two
+// alphabet subsets. The plain "400.css" form declares every subset
+// a font has — Cyrillic, Greek, Vietnamese — which this site will
+// never show, and each one adds to the stylesheet a reader must
+// download before any text appears.
+//
+// WHY LATIN-EXT IS INCLUDED AND NOT DROPPED TOO: it carries the
+// accented and macron letters that transliterated Indian names
+// need — Bihār, Galvão, Ruzicka. Without it those words fall back
+// to a different typeface mid-sentence.
+import "@fontsource/source-serif-4/latin-400.css";
+import "@fontsource/source-serif-4/latin-ext-400.css";
+import "@fontsource/source-serif-4/latin-400-italic.css";
+import "@fontsource/source-serif-4/latin-ext-400-italic.css";
+import "@fontsource/source-serif-4/latin-600.css";
+import "@fontsource/source-serif-4/latin-ext-600.css";
+import "@fontsource/source-serif-4/latin-700.css";
+import "@fontsource/source-serif-4/latin-ext-700.css";
+import "@fontsource/public-sans/latin-400.css";
+import "@fontsource/public-sans/latin-ext-400.css";
+import "@fontsource/public-sans/latin-600.css";
+import "@fontsource/public-sans/latin-ext-600.css";
+import "@fontsource/public-sans/latin-700.css";
+import "@fontsource/public-sans/latin-ext-700.css";
+import "@fontsource/ibm-plex-mono/latin-400.css";
+import "@fontsource/ibm-plex-mono/latin-ext-400.css";
+import "@fontsource/ibm-plex-mono/latin-600.css";
+import "@fontsource/ibm-plex-mono/latin-ext-600.css";
+
+import "../styles/tokens.css";
+import "../styles/base.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Overrides the canonical link. Used by archived Substack pieces. */
+  canonicalUrl?: string;
+  /** "article" for a piece of writing, "website" for everything else. */
+  ogType?: "website" | "article";
+  /** Set true to keep a page out of search results. */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  ogType = "website",
+  noindex = false,
+} = Astro.props;
+
+// The full address of this page. Astro.site comes from
+// astro.config.mjs, so these are always absolute.
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const canonical = canonicalUrl ?? pageUrl;
+
+// The browser tab title. The home page uses its title alone;
+// every other page gets the site name appended.
+const isHome = Astro.url.pathname === "/";
+const fullTitle = isHome ? title : `${title} — Anupam Kumar`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <!-- How the page looks when someone shares the link. -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:site_name" content="Anupam Kumar" />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- Lets a reader subscribe from their browser's address bar. -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="Anupam Kumar"
+      href="/rss.xml"
+    />
+
+    <!-- ============================================================
+         PREVENT THE COLOUR FLASH
+         This runs before the browser draws anything, which is why it
+         sits here rather than in a separate file that would load
+         later. Without it, a reader who chose dark would see a flash
+         of light page every single time they open a page.
+
+         is:inline tells Astro to leave this exactly where it is
+         rather than bundling it into a file loaded afterwards.
+         ============================================================ -->
+    <script is:inline>
+      (function () {
+        try {
+          // What did this reader choose last time, if anything?
+          var saved = localStorage.getItem("theme");
+
+          // Only act on a real choice. If there is none, the CSS in
+          // tokens.css already follows the device setting on its own.
+          if (saved === "dark" || saved === "light") {
+            document.documentElement.setAttribute("data-theme", saved);
+          }
+        } catch (error) {
+          // Reading storage throws in a private window or when site
+          // data is blocked. The page then follows the device setting,
+          // which is a perfectly good outcome.
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <!-- The first thing a keyboard user reaches. Invisible until
+         focused, then it jumps past the navigation to the content. -->
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <Header />
+
+    <main id="main" class="site-main">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .site-main {
+    max-width: var(--width-page);
+    margin: 0 auto;
+
+    /* Vertical padding is set with padding-block so it can never
+       overwrite the side gutter. A "padding" shorthand here is the
+       usual way a page ends up with text touching the screen edge
+       on a phone. */
+    padding-block: var(--space-7);
+    padding-inline: var(--width-gutter);
+  }
+</style>

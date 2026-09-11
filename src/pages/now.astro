@@ -1,0 +1,91 @@
+---
+// ============================================================
+// /now/ — what he is working on at the moment.
+//
+// A "now page" is a short, dated statement of current focus. The
+// date is the point: an undated one silently becomes a lie.
+//
+// To update it, change the text and the date below. That is the
+// whole maintenance burden.
+// ============================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+// Change this whenever the page is updated.
+const lastUpdated = new Date("2026-09-11");
+
+const formatted = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(lastUpdated);
+
+const iso = lastUpdated.toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  title="Now"
+  description="What Anupam Kumar is working on at the moment."
+>
+  <article class="prose" data-pagefind-body>
+    <h1>Now</h1>
+
+    <p class="updated">
+      Last updated <time datetime={iso}>{formatted}</time>
+    </p>
+
+    <p>
+      This site has just gone up. What exists so far is the structure: the
+      writing, the shape of the data layer, and the rules the whole thing is
+      built to.
+    </p>
+
+    <h2>Working on</h2>
+
+    <ul>
+      <li>The first essays.</li>
+      <li>
+        Choosing the first three datasets to clean and publish. The test is that
+        the raw source should be public but painful to use, because that gap is
+        where the work is worth doing.
+      </li>
+    </ul>
+
+    <h2>Next</h2>
+
+    <ul>
+      <li>
+        A browsable data section, generated from each dataset's own metadata
+        rather than a list kept by hand.
+      </li>
+      <li>
+        The first two tools — one small and rule-based, one that genuinely needs
+        a wide screen — built together so the plug-in design is proved rather
+        than assumed.
+      </li>
+    </ul>
+
+    <p class="explainer">
+      This is a <a href="https://nownownow.com/about">now page</a>: a short,
+      dated statement of what has my attention, rather than a list of everything
+      I have ever done.
+    </p>
+  </article>
+</BaseLayout>
+
+<style>
+  .updated {
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
+  .explainer {
+    margin-top: var(--space-7);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--colour-rule);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+</style>

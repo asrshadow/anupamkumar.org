@@ -1,0 +1,191 @@
+---
+// ============================================================
+// PIECE LAYOUT
+// The shell around one essay or note: the title, the date, the
+// text itself, the tags, and the data box.
+//
+// The reading column has no container of any kind. Just text on
+// paper, because nothing should compete with reading.
+// ============================================================
+
+import BaseLayout from "./BaseLayout.astro";
+import PostMeta from "../components/PostMeta.astro";
+import TagList from "../components/TagList.astro";
+import DataBox from "../components/DataBox.astro";
+import type { Piece } from "../lib/writing";
+
+interface Props {
+  piece: Piece;
+}
+
+const { piece } = Astro.props;
+const data = piece.entry.data;
+
+// Which address should search engines treat as the original?
+//
+// For a piece written here, this page. For one written in
+// Substack and archived here, the Substack post. Without this,
+// the two copies compete and the ranking is split between them.
+const canonicalUrl =
+  data.canonical === "substack" && data.substackUrl
+    ? data.substackUrl
+    : undefined;
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  canonicalUrl={canonicalUrl}
+  ogType="article"
+>
+  <article class="piece" data-pagefind-body>
+    <header class="piece-header">
+      <h1>{data.title}</h1>
+
+      <p class="standfirst">{data.description}</p>
+
+      <PostMeta
+        date={piece.date}
+        updated={piece.updated}
+        isExternal={piece.isExternal}
+        substackUrl={piece.substackUrl}
+      />
+    </header>
+
+    {
+      /* An archived Substack piece says so plainly at the top and
+         links to the original, so a reader always knows which copy
+         they are looking at. */
+      piece.isExternal && (
+        <aside class="external-notice">
+          <p>
+            This was first published on{" "}
+            <a href={piece.substackUrl}>Substack</a>, and is archived here so it
+            stays available. The version on Substack is the original.
+          </p>
+        </aside>
+      )
+    }
+
+    <!-- The text itself. .prose sets serif, 18px, and the 68
+         character reading measure. -->
+    <div class="prose">
+      <slot />
+    </div>
+
+    <footer class="piece-footer">
+      <DataBox datasets={data.datasets} />
+
+      <TagList tags={data.tags} label="Tagged" />
+
+      {
+        /* A piece written here that was also sent to the newsletter
+           links out to that copy, so a reader can see the discussion
+           there. */
+        !piece.isExternal && piece.substackUrl && (
+          <p class="cross-post">
+            This was also sent to subscribers —{" "}
+            <a href={piece.substackUrl}>read it on Substack</a>.
+          </p>
+        )
+      }
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .piece-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--colour-rule);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .piece-header h1 {
+    margin: 0;
+  }
+
+  /* The standfirst is the one-sentence description, set larger
+     than the body so it reads as an introduction rather than as
+     the first paragraph. */
+  .standfirst {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--size-lg);
+    line-height: 1.45;
+    color: var(--colour-ink-muted);
+    text-wrap: pretty;
+  }
+
+  .external-notice {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    border-left: 3px solid var(--colour-accent);
+    background: var(--colour-accent-soft);
+    border-radius: 0 var(--radius-data) var(--radius-data) 0;
+  }
+
+  .external-notice p {
+    margin: 0;
+    font-size: var(--size-sm);
+    line-height: var(--leading-ui);
+  }
+
+  .piece-footer {
+    max-width: var(--measure);
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--colour-rule);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .cross-post {
+    margin: 0;
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+</style>
+
+<style is:global>
+  /* ============================================================
+     TABLES INSIDE AN ESSAY
+     Every table is wrapped in a .table-wrap box at build time, by
+     the plugin in scripts/rehype-wrap-tables.mjs. That box does
+     the sideways scrolling, so the page body never has to.
+
+     The table itself is left alone deliberately. Making the table
+     scroll directly, with display: block, would strip its rows and
+     columns of meaning for a screen reader.
+
+     .table-wrap is styled in base.css. Only the focus ring is set
+     here, because the box is focusable so a keyboard user can
+     scroll it, and anything focusable must show where it is.
+     ============================================================ */
+  .prose .table-wrap:focus-visible {
+    outline: 3px solid var(--colour-accent);
+    outline-offset: 2px;
+  }
+
+  /* Images in an essay are records too, so square corners. */
+  .prose img {
+    border-radius: var(--radius-data);
+    margin-block: var(--space-5);
+  }
+
+  /* Footnotes, which Markdown puts at the foot of the piece. */
+  .prose .footnotes {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--colour-rule);
+    font-size: var(--size-base);
+    color: var(--colour-ink-muted);
+  }
+</style>

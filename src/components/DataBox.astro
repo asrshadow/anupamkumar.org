@@ -1,0 +1,92 @@
+---
+// ============================================================
+// DATA BOX
+// "The data behind this piece" — shown at the foot of an essay
+// that names datasets in its frontmatter.
+//
+// Right now the data registry does not exist yet, so this lists
+// the dataset ids and links to where each will live. When the
+// registry is built in the next phase, this component starts
+// reading titles and retrieval dates from dataset.json and
+// nothing else on the site has to change.
+// ============================================================
+
+interface Props {
+  /** Dataset ids, like "union/budget-expenditure". */
+  datasets: string[];
+}
+
+const { datasets } = Astro.props;
+---
+
+{
+  datasets.length > 0 && (
+    <aside class="data-box" aria-labelledby="data-box-heading">
+      <h2 id="data-box-heading" class="data-box-heading">
+        The data behind this piece
+      </h2>
+
+      <ul class="data-list">
+        {datasets.map((id) => (
+          <li>
+            <a href={`/data/${id}/`} class="dataset-id">
+              {id}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <p class="data-note">
+        Every dataset here carries its source, the date it was retrieved, and a
+        description of each column with its unit.
+      </p>
+    </aside>
+  )
+}
+
+<style>
+  /* A left rail in the accent colour and a soft background, with
+     square corners. Emphasis without boxing, and without a large
+     area of saturated colour. */
+  .data-box {
+    margin-top: var(--space-7);
+    padding: var(--space-4) var(--space-5);
+    border-left: 3px solid var(--colour-accent);
+    background: var(--colour-accent-soft);
+    border-radius: 0 var(--radius-data) var(--radius-data) 0;
+    max-width: var(--measure);
+  }
+
+  .data-box-heading {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+    margin: 0 0 var(--space-3);
+  }
+
+  .data-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* A dataset id is machine-readable text, so it is set in mono —
+     the same signal used for figures and code. */
+  .dataset-id {
+    font-family: var(--font-mono);
+    font-size: var(--size-sm);
+  }
+
+  .data-note {
+    margin: var(--space-3) 0 0;
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-ui);
+  }
+</style>

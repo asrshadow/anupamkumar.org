@@ -1,0 +1,64 @@
+---
+// ============================================================
+// /contact/ — how to reach him.
+//
+// No contact form. A form needs a server to receive what it
+// sends, and this site does not have one. An email address works
+// everywhere, needs nothing, and cannot break.
+// ============================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Contact"
+  description="How to reach Anupam Kumar, and what is most useful to write about."
+>
+  <article class="prose" data-pagefind-body>
+    <h1>Contact</h1>
+
+    <p>
+      Email is best:
+      <a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a>
+    </p>
+
+    <p>
+      To follow the writing by email, subscribe to
+      <a href="https://asranupam.substack.com">the newsletter</a>. To follow it
+      in a reader, use <a href="/rss.xml">the RSS feed</a>.
+    </p>
+
+    <h2>Particularly useful to hear about</h2>
+
+    <ul>
+      <li>
+        <strong>A figure that looks wrong.</strong> Say which piece or dataset,
+        and what you expected instead. On a site whose whole claim is provenance,
+        a correction is a contribution.
+      </li>
+      <li>
+        <strong>A dataset that is painful to use.</strong> If the raw source is
+        public but unusable, that gap is exactly what this site exists to close.
+      </li>
+      <li>
+        <strong>A source that has moved.</strong> Government links rot
+        constantly. If one here leads nowhere, telling me is a real help.
+      </li>
+      <li>
+        <strong>Something that does not work.</strong> A page that scrolls
+        sideways on your phone, a tool that will not open, text you cannot read.
+        Say what device and browser you were using.
+      </li>
+    </ul>
+
+    <h2>On reuse</h2>
+
+    <p>
+      You do not need permission to reuse the writing or the data — both are
+      published under
+      <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, so
+      credit is all that is asked. If you would like a citation in a particular
+      format, or the underlying files in a different one, write and ask.
+    </p>
+  </article>
+</BaseLayout>

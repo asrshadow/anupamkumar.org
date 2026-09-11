@@ -1,0 +1,84 @@
+---
+// ============================================================
+// PIECE CARD
+// One entry in a list of writing: title, date, description and
+// tags.
+//
+// Deliberately not a boxed card. A list of writing reads better
+// as a list separated by hairlines than as a grid of boxes, and
+// nothing should compete with the titles.
+// ============================================================
+
+import type { Piece } from "../lib/writing";
+import PostMeta from "./PostMeta.astro";
+import TagList from "./TagList.astro";
+
+interface Props {
+  piece: Piece;
+  /** Hide tags in places where they would be repetitive, like a tag page. */
+  showTags?: boolean;
+}
+
+const { piece, showTags = true } = Astro.props;
+---
+
+<article class="piece-card">
+  <h3 class="piece-title">
+    <a href={piece.url}>{piece.title}</a>
+  </h3>
+
+  <PostMeta
+    date={piece.date}
+    updated={piece.updated}
+    isExternal={piece.isExternal}
+    substackUrl={piece.substackUrl}
+  />
+
+  <p class="piece-description">{piece.description}</p>
+
+  {showTags && <TagList tags={piece.tags} />}
+</article>
+
+<style>
+  .piece-card {
+    padding-block: var(--space-5);
+    border-bottom: 1px solid var(--colour-rule);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  /* The last item in a list should not leave a rule hanging under
+     it with nothing below. */
+  .piece-card:last-child {
+    border-bottom: 0;
+  }
+
+  .piece-title {
+    font-family: var(--font-serif);
+    font-size: var(--size-lg);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .piece-title a {
+    color: var(--colour-ink);
+    text-decoration: none;
+  }
+
+  .piece-title a:hover {
+    color: var(--colour-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .piece-description {
+    margin: 0;
+    max-width: var(--measure);
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+  }
+</style>

@@ -1,0 +1,32 @@
+---
+// ============================================================
+// /writing/<slug>/ — one essay, or one archived Substack piece.
+//
+// getStaticPaths tells Astro which pages to build. It runs once
+// at build time and produces one HTML file per piece.
+// ============================================================
+
+import PieceLayout from "../../layouts/PieceLayout.astro";
+import { getWritingSection } from "../../lib/writing";
+import { render } from "astro:content";
+
+export async function getStaticPaths() {
+  const pieces = await getWritingSection();
+
+  return pieces.map((piece) => ({
+    // The slug has already had its DD-MM-YYYY prefix stripped by
+    // the loader in src/content.config.ts.
+    params: { slug: piece.slug },
+    props: { piece },
+  }));
+}
+
+const { piece } = Astro.props;
+
+// Turn the Markdown into the component that renders it.
+const { Content } = await render(piece.entry);
+---
+
+<PieceLayout piece={piece}>
+  <Content />
+</PieceLayout>

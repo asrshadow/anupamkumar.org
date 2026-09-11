@@ -1,0 +1,163 @@
+---
+// ============================================================
+// HOME PAGE
+// Who this is, what the site is for, and the most recent pieces.
+//
+// Data and Tools are described as coming rather than linked,
+// because a link to an empty page is worse than no link.
+// ============================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PieceCard from "../components/PieceCard.astro";
+import { getAllWriting } from "../lib/writing";
+
+const recent = (await getAllWriting()).slice(0, 5);
+---
+
+<BaseLayout
+  title="Anupam Kumar"
+  description="Writing, cleaned datasets and small tools on public finance, public policy, economics and geoeconomics — with the aim of making economic information usable by people who are not economists."
+>
+  <section class="intro">
+    <h1>Anupam Kumar</h1>
+
+    <p class="lede">
+      I write about public finance, public policy, economics and geoeconomics.
+      The aim of this site is narrow and deliberate: to make economic
+      information usable by people who are not economists.
+    </p>
+
+    <p class="lede-secondary">
+      Alongside the writing, it will hold cleaned public finance datasets with
+      their sources and methods documented, and small tools that run entirely in
+      your browser.
+    </p>
+  </section>
+
+  <section class="recent" aria-labelledby="recent-heading">
+    <h2 id="recent-heading" class="section-heading">Recent writing</h2>
+
+    {
+      recent.length > 0 ? (
+        <div class="piece-list">
+          {recent.map((piece) => (
+            <PieceCard piece={piece} />
+          ))}
+        </div>
+      ) : (
+        <p class="empty">Nothing published yet. The first pieces are coming.</p>
+      )
+    }
+
+    {
+      recent.length > 0 && (
+        <p class="see-all">
+          <a href="/writing/">All writing</a>
+        </p>
+      )
+    }
+  </section>
+
+  <section class="coming" aria-labelledby="coming-heading">
+    <h2 id="coming-heading" class="section-heading">What is coming</h2>
+
+    <div class="coming-grid">
+      <div class="coming-item">
+        <h3>Datasets</h3>
+        <p>
+          Cleaned Indian public finance data, each one carrying its source, the
+          date it was retrieved, a description of every column with its unit, and
+          a build script that regenerates it from the original files. Documented
+          well enough to cite in a paper.
+        </p>
+      </div>
+
+      <div class="coming-item">
+        <h3>Tools</h3>
+        <p>
+          Small interactive things that run entirely in your browser. Nothing you
+          open or upload is sent anywhere, because there is no server to send it
+          to.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro {
+    max-width: var(--measure);
+    margin-bottom: var(--space-8);
+  }
+
+  .intro h1 {
+    /* The largest size on the scale, used on this page only. */
+    font-size: var(--size-3xl);
+    margin-bottom: var(--space-5);
+  }
+
+  .lede {
+    font-family: var(--font-serif);
+    font-size: var(--size-lg);
+    line-height: 1.5;
+    margin: 0 0 var(--space-4);
+    text-wrap: pretty;
+  }
+
+  .lede-secondary {
+    font-family: var(--font-serif);
+    font-size: var(--size-md);
+    line-height: var(--leading-body);
+    color: var(--colour-ink-muted);
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  .section-heading {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+
+    margin: 0 0 var(--space-2);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--colour-ink);
+  }
+
+  .recent,
+  .coming {
+    margin-bottom: var(--space-8);
+  }
+
+  .empty {
+    color: var(--colour-ink-muted);
+    padding-block: var(--space-5);
+  }
+
+  .see-all {
+    margin: var(--space-5) 0 0;
+    font-size: var(--size-sm);
+  }
+
+  .coming-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-6);
+    margin-top: var(--space-5);
+  }
+
+  .coming-item h3 {
+    font-family: var(--font-sans);
+    font-size: var(--size-base);
+    font-weight: 700;
+    margin: 0 0 var(--space-2);
+  }
+
+  .coming-item p {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+  }
+</style>

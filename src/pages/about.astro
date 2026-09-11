@@ -1,0 +1,113 @@
+---
+// ============================================================
+// /about/ — who this is and what the site is for.
+//
+// The text below is a starting point to be rewritten in Anupam's
+// own words. Everything in it is true of the project; none of it
+// makes claims about his career that he has not made himself.
+// ============================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="About"
+  description="About Anupam Kumar and this site: writing, cleaned datasets and browser-side tools on public finance and public policy."
+>
+  <article class="prose" data-pagefind-body>
+    <h1>About</h1>
+
+    <p>
+      I work on public finance and public policy, and I write about economics and
+      geoeconomics more broadly. This site is where that writing lives, alongside
+      the data behind it.
+    </p>
+
+    <h2>What this site is for</h2>
+
+    <p>
+      Its purpose is narrow and deliberate: <strong
+        >to make economic information usable by people who are not economists</strong
+      >. Public finance in India is not short of numbers. It is short of numbers
+      anyone can find, check and reuse.
+    </p>
+
+    <p>
+      So the site holds three things, in the order they matter. Writing, which is
+      the point. Cleaned datasets, each carrying its source, the date it was
+      retrieved, a description of every column with its unit, and a script that
+      rebuilds it from the original files. And small tools that run entirely in
+      your browser.
+    </p>
+
+    <h2>On the data</h2>
+
+    <p>
+      Anyone can post a spreadsheet. What makes a dataset worth citing is that it
+      answers the four questions a careful reader always has: where exactly did
+      this come from, what vintage is it, what are the units, and what was
+      changed?
+    </p>
+
+    <p>
+      Every dataset here answers all four. The original files are kept untouched
+      alongside the cleaned ones, and the cleaning can be re-run from scratch by
+      anyone who wants to check it.
+    </p>
+
+    <p>
+      One thing in particular gets stated rather than assumed: Budget Estimates,
+      Revised Estimates and Actuals for the same year are three different facts,
+      not one figure corrected twice. Conflating them is the most common error in
+      Indian fiscal datasets, and it quietly corrupts every comparison built on
+      top.
+    </p>
+
+    <h2>On the tools</h2>
+
+    <p>
+      Everything computes in your browser. If you open a state finance
+      spreadsheet in a tool here, that file never leaves your laptop, because
+      there is no server for it to go to. For anyone in government, a think tank
+      or a newsroom handling figures that are not yet public, that is not a
+      technical detail.
+    </p>
+
+    <h2>On how this site is built</h2>
+
+    <p>
+      It is built to outlive its hosting. Everything of value — every essay,
+      every dataset, every script — is a plain text file in
+      <a href="https://github.com/asrshadow/anupamkumar.org">a public repository</a>,
+      readable in any text editor, with no database and no service required to
+      make sense of it.
+    </p>
+
+    <p>
+      The hosting is assumed to be temporary and the domain is assumed to be
+      permanent. If this site has to be rebuilt somewhere else in 2035, that is
+      a clone and a build, not a recovery project.
+    </p>
+
+    <h2>Reuse and citation</h2>
+
+    <p>
+      The writing and the datasets are published under
+      <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, and
+      the code under the MIT licence. Please reuse any of it, with credit.
+    </p>
+
+    <p>
+      Official figures republished here keep their own publisher's licence, which
+      is recorded with each dataset.
+    </p>
+
+    <h2>Getting in touch</h2>
+
+    <p>
+      Corrections are especially welcome, and on a site whose whole claim is
+      provenance, a correction is a contribution rather than a complaint. Write
+      to <a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a>.
+    </p>
+  </article>
+</BaseLayout>

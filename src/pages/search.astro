@@ -1,0 +1,156 @@
+---
+// ============================================================
+// /search/ — full-text search across everything written.
+//
+// Search is done by Pagefind, which builds an index at deploy
+// time from the finished pages. Two consequences worth knowing:
+//
+//   1. There is no search service, no account and no third-party
+//      script. Nothing a reader types is sent anywhere, because
+//      the index is a file their browser already has. If this
+//      site is rebuilt elsewhere in ten years, search comes with
+//      it.
+//   2. The index is built by "npm run build", so search does NOT
+//      work with "npm run dev". Use "npm run build" and then
+//      "npm run preview" to try it on this computer.
+//
+// Pagefind indexes anything marked data-pagefind-body, which is
+// set on essays, notes and the standing pages.
+//
+// This uses Pagefind's Component UI rather than its older Default
+// UI, because the components ship better keyboard handling and
+// screen reader announcements — and accessibility here is a
+// requirement, not a preference.
+// ============================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Search"
+  description="Search everything written on this site."
+  noindex={true}
+>
+  <!-- These two files are created by the build, so they do not
+       exist while the dev server is running. The page says so
+       rather than showing an empty box. -->
+  <link href="/pagefind/pagefind-component-ui.css" rel="stylesheet" />
+  <script src="/pagefind/pagefind-component-ui.js" type="module" is:inline></script>
+
+  <header class="page-header">
+    <h1>Search</h1>
+    <p class="page-intro">
+      Full-text search across every essay and note. Nothing you type here is
+      sent anywhere — the search index is a file your browser has already
+      downloaded.
+    </p>
+  </header>
+
+  <div class="search-area">
+    <!-- The three pieces of the search interface, placed directly
+         on the page rather than inside a pop-up window. The
+         "instance" attribute is what connects them to each other. -->
+    <pagefind-input instance="site" autofocus></pagefind-input>
+    <pagefind-summary instance="site"></pagefind-summary>
+    <pagefind-results instance="site"></pagefind-results>
+  </div>
+
+  <noscript>
+    <p class="fallback">
+      Search needs JavaScript, which appears to be switched off. Everything
+      written is listed at <a href="/writing/">/writing/</a>, newest first, and
+      can be browsed by subject from there.
+    </p>
+  </noscript>
+
+  <p class="dev-note" id="dev-note" hidden>
+    Search is built when the whole site is built. On this computer, run
+    <code>npm run build</code> and then <code>npm run preview</code> to try it.
+  </p>
+</BaseLayout>
+
+<script is:inline>
+  // ============================================================
+  // TELL THE READER WHEN SEARCH IS NOT AVAILABLE
+  //
+  // On the live site the Pagefind files always exist. While the
+  // dev server is running they do not, and the search box would
+  // simply sit there doing nothing with no explanation.
+  //
+  // This checks whether Pagefind's own entry file is reachable,
+  // and if it is not, shows the note explaining why.
+  // ============================================================
+
+  fetch("/pagefind/pagefind-entry.json")
+    .then(function (response) {
+      // A successful response means the index exists and search works.
+      if (response.ok) return;
+      showDevNote();
+    })
+    .catch(function () {
+      // No response at all — same conclusion.
+      showDevNote();
+    });
+
+  function showDevNote() {
+    var note = document.getElementById("dev-note");
+    if (note) note.hidden = false;
+
+    var area = document.querySelector(".search-area");
+    if (area) area.hidden = true;
+  }
+</script>
+
+<style>
+  .page-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+  }
+
+  .page-intro {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
+  }
+
+  .search-area {
+    max-width: var(--measure);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .fallback,
+  .dev-note {
+    max-width: var(--measure);
+    margin-top: var(--space-5);
+    padding: var(--space-4) var(--space-5);
+    border-left: 3px solid var(--colour-accent);
+    background: var(--colour-accent-soft);
+    border-radius: 0 var(--radius-data) var(--radius-data) 0;
+    font-size: var(--size-sm);
+    line-height: var(--leading-ui);
+  }
+</style>
+
+<style is:global>
+  /* ============================================================
+     MAKE PAGEFIND LOOK LIKE THE REST OF THE SITE
+
+     Pagefind builds its own search interface with its own
+     styling, exposed through the variables below. Setting them to
+     this site's tokens is what stops the search page looking like
+     a component bolted on from somewhere else.
+     ============================================================ */
+  .search-area {
+    --pagefind-ui-primary: var(--colour-accent);
+    --pagefind-ui-text: var(--colour-ink);
+    --pagefind-ui-background: var(--colour-paper);
+    --pagefind-ui-border: var(--colour-border-input);
+    --pagefind-ui-tag: var(--colour-surface-sunk);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: var(--radius-control);
+    --pagefind-ui-font: var(--font-sans);
+  }
+</style>

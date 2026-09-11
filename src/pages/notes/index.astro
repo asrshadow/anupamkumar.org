@@ -1,0 +1,55 @@
+---
+// ============================================================
+// /notes/ — short pieces, listed newest first.
+// ============================================================
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PieceCard from "../../components/PieceCard.astro";
+import { getNotes } from "../../lib/writing";
+
+const notes = await getNotes();
+---
+
+<BaseLayout
+  title="Notes"
+  description="Short pieces: reactions to released figures, clarifications, and working thoughts on public finance and policy."
+>
+  <header class="page-header">
+    <h1>Notes</h1>
+    <p class="page-intro">
+      Shorter pieces with less ceremony. A reaction to a released figure, a
+      clarification, or a working thought. The difference from an essay is one
+      of weight, not of care.
+    </p>
+  </header>
+
+  {
+    notes.length > 0 ? (
+      <div class="piece-list">
+        {notes.map((note) => (
+          <PieceCard piece={note} />
+        ))}
+      </div>
+    ) : (
+      <p class="empty">No notes yet.</p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .page-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+  }
+
+  .page-intro {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
+  }
+
+  .empty {
+    color: var(--colour-ink-muted);
+  }
+</style>

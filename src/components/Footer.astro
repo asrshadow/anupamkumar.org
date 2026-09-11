@@ -1,0 +1,131 @@
+---
+// ============================================================
+// SITE FOOTER
+// Contact, the feed, the licences, and the year.
+//
+// The licence links matter more than they look. This site wants
+// to be reused and cited by researchers, journalists and
+// students, and saying clearly what may be reused is what makes
+// that happen.
+// ============================================================
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-block">
+      <h2 class="footer-heading">Anupam Kumar</h2>
+      <p class="footer-text">
+        Writing on public finance, public policy, economics and geoeconomics.
+      </p>
+    </div>
+
+    <div class="footer-block">
+      <h2 class="footer-heading">Elsewhere</h2>
+      <ul class="footer-list">
+        <li><a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a></li>
+        <li>
+          <a href="https://asranupam.substack.com" rel="me">Newsletter on Substack</a>
+        </li>
+        <li><a href="/rss.xml">RSS feed</a></li>
+        <li>
+          <a href="https://github.com/asrshadow/anupamkumar.org">Source on GitHub</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="footer-block">
+      <h2 class="footer-heading">Reuse</h2>
+      <ul class="footer-list">
+        <li>
+          Writing —
+          <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+        </li>
+        <li>
+          Data —
+          <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+        </li>
+        <li>
+          Code —
+          <a href="https://github.com/asrshadow/anupamkumar.org/blob/main/LICENSE-code">MIT</a>
+        </li>
+      </ul>
+      <p class="footer-note">
+        Official figures keep their publisher's own licence, recorded with each
+        dataset.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; {year} Anupam Kumar. Please cite rather than copy.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-9);
+    border-top: 1px solid var(--colour-rule);
+    background: var(--colour-paper);
+  }
+
+  .footer-inner {
+    max-width: var(--width-page);
+    margin: 0 auto;
+    padding: var(--space-7) var(--width-gutter) var(--space-5);
+
+    /* Three columns on a wide screen, stacking to one as the screen
+       narrows. auto-fit with minmax does that without a media query,
+       and never produces a column narrower than 14rem. */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--space-6);
+  }
+
+  .footer-heading {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+    margin: 0 0 var(--space-3);
+  }
+
+  .footer-text,
+  .footer-note {
+    margin: 0;
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-ui);
+  }
+
+  .footer-note {
+    margin-top: var(--space-3);
+    font-size: var(--size-xs);
+  }
+
+  .footer-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: var(--size-sm);
+  }
+
+  .footer-bottom {
+    max-width: var(--width-page);
+    margin: 0 auto;
+    padding: var(--space-4) var(--width-gutter) var(--space-6);
+    border-top: 1px solid var(--colour-rule);
+  }
+
+  .footer-bottom p {
+    margin: 0;
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+  }
+</style>

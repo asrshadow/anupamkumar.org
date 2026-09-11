@@ -1,0 +1,89 @@
+---
+// ============================================================
+// /tags/<tag>/ — everything carrying one subject tag.
+//
+// These pages are generated from the tags in the frontmatter of
+// each piece. There is no list of tags to maintain anywhere.
+// ============================================================
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PieceCard from "../../components/PieceCard.astro";
+import { getAllTags, getAllWriting } from "../../lib/writing";
+
+export async function getStaticPaths() {
+  const tags = await getAllTags();
+  const all = await getAllWriting();
+
+  return tags.map(({ tag }) => ({
+    params: { tag },
+    props: {
+      tag,
+      pieces: all.filter((piece) => piece.tags.includes(tag)),
+    },
+  }));
+}
+
+const { tag, pieces } = Astro.props;
+
+// "public-finance" reads as "Public finance".
+const spaced = tag.replace(/-/g, " ");
+const displayTag = spaced.charAt(0).toUpperCase() + spaced.slice(1);
+
+// English needs the singular when there is exactly one.
+const countWords = pieces.length === 1 ? "1 piece" : `${pieces.length} pieces`;
+---
+
+<BaseLayout
+  title={displayTag}
+  description={`Writing tagged ${spaced} — ${countWords}.`}
+>
+  <header class="page-header">
+    <p class="eyebrow">Tagged</p>
+    <h1>{displayTag}</h1>
+    <p class="count">{countWords}</p>
+  </header>
+
+  <div class="piece-list">
+    {pieces.map((piece) => <PieceCard piece={piece} showTags={false} />)}
+  </div>
+
+  <p class="back">
+    <a href="/writing/">All writing</a>
+  </p>
+</BaseLayout>
+
+<style>
+  .page-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--colour-rule);
+  }
+
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+    margin: 0 0 var(--space-2);
+  }
+
+  .page-header h1 {
+    margin: 0 0 var(--space-2);
+  }
+
+  .count {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
+  .back {
+    margin-top: var(--space-6);
+    font-size: var(--size-sm);
+  }
+</style>

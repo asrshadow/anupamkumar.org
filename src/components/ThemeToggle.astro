@@ -1,0 +1,184 @@
+---
+// ============================================================
+// THEME TOGGLE
+// A button that switches between light and dark.
+//
+// Three things have to be true for this to feel right:
+//   1. A reader's device setting is respected by default.
+//   2. A reader's own choice overrides that, and is remembered.
+//   3. The page NEVER flashes the wrong colour on load.
+//
+// Point 3 is why a small piece of JavaScript runs in the page
+// head, before anything is drawn. See BaseLayout.astro.
+// ============================================================
+---
+
+<button
+  id="theme-toggle"
+  type="button"
+  class="theme-toggle"
+  aria-label="Switch between light and dark theme"
+>
+  <!-- Sun and moon are drawn as SVG rather than loaded as images,
+       so they cost no extra request and follow the text colour.
+       aria-hidden keeps a screen reader from announcing them; the
+       button's own label says what it does. -->
+  <svg
+    class="icon-sun"
+    viewBox="0 0 24 24"
+    width="18"
+    height="18"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+  </svg>
+
+  <svg
+    class="icon-moon"
+    viewBox="0 0 24 24"
+    width="18"
+    height="18"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+  </svg>
+
+  <!-- The word beside the icon. Colour and shape alone never carry
+       meaning on this site, so the state is written out too. -->
+  <span class="theme-toggle-label" id="theme-toggle-label">Dark</span>
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    border: 1px solid var(--colour-border-input);
+    border-radius: var(--radius-control);
+    color: var(--colour-ink-muted);
+    font-size: var(--size-sm);
+    cursor: pointer;
+  }
+
+  .theme-toggle:hover {
+    color: var(--colour-ink);
+    background: var(--colour-surface-sunk);
+  }
+
+  /* Show the icon for the theme you would switch TO, not the one
+     you are in. In light mode the button offers dark, so it shows
+     a moon. */
+  .icon-sun {
+    display: none;
+  }
+
+  .icon-moon {
+    display: block;
+  }
+
+  /* When the page is dark, swap them. Both the device-setting case
+     and the explicit-choice case have to be covered, exactly as in
+     tokens.css. */
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .icon-sun {
+      display: block;
+    }
+    :global(:root:not([data-theme="light"])) .icon-moon {
+      display: none;
+    }
+  }
+
+  :global(:root[data-theme="dark"]) .icon-sun {
+    display: block;
+  }
+
+  :global(:root[data-theme="dark"]) .icon-moon {
+    display: none;
+  }
+
+  /* On a narrow screen the icon alone is enough. */
+  @media (max-width: 32rem) {
+    .theme-toggle-label {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // ============================================================
+  // WHAT HAPPENS WHEN THE BUTTON IS PRESSED
+  //
+  // This runs after the page has loaded. The code that prevents
+  // the colour flash on first paint is separate, in BaseLayout.
+  // ============================================================
+
+  // ------------------------------------------------------------
+  // STEP 1 — Work out which theme is showing right now.
+  // Either the reader chose one, or the device decides.
+  // ------------------------------------------------------------
+  function currentTheme(): "light" | "dark" {
+    const chosen = document.documentElement.getAttribute("data-theme");
+    if (chosen === "light" || chosen === "dark") return chosen;
+
+    const deviceIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return deviceIsDark ? "dark" : "light";
+  }
+
+  // ------------------------------------------------------------
+  // STEP 2 — Update the word beside the icon so it names the
+  // theme the button would switch TO.
+  // ------------------------------------------------------------
+  function updateLabel(): void {
+    const label = document.getElementById("theme-toggle-label");
+    if (!label) return;
+    label.textContent = currentTheme() === "dark" ? "Light" : "Dark";
+  }
+
+  // ------------------------------------------------------------
+  // STEP 3 — Switch the theme, and remember the choice.
+  //
+  // The try/catch matters: reading or writing localStorage throws
+  // an error in a private window or when site data is blocked. A
+  // theme toggle is not worth breaking a page over, so a failure
+  // here is ignored and the theme simply is not remembered.
+  // ------------------------------------------------------------
+  function toggleTheme(): void {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+
+    try {
+      localStorage.setItem("theme", next);
+    } catch (error) {
+      // Storage unavailable. The theme still changes for this page.
+    }
+
+    updateLabel();
+  }
+
+  // ------------------------------------------------------------
+  // STEP 4 — Wire the button up, and keep the label correct if the
+  // reader changes their device setting while the page is open.
+  // ------------------------------------------------------------
+  const button = document.getElementById("theme-toggle");
+  if (button) {
+    button.addEventListener("click", toggleTheme);
+    updateLabel();
+  }
+
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", updateLabel);
+</script>

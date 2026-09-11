@@ -1,0 +1,89 @@
+---
+// ============================================================
+// TAG LIST
+// The subject tags on a piece, each linking to its tag page.
+// ============================================================
+
+interface Props {
+  tags: string[];
+  /** A heading above the list, when it needs one. */
+  label?: string;
+}
+
+const { tags, label } = Astro.props;
+
+// Tags are stored lowercase with dashes, like "public-finance".
+// Readers should see "Public finance".
+function displayTag(tag: string): string {
+  const spaced = tag.replace(/-/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+---
+
+{
+  tags.length > 0 && (
+    <div class="tag-list">
+      {label && <span class="tag-label">{label}</span>}
+      <ul>
+        {tags.map((tag) => (
+          <li>
+            <a href={`/tags/${tag}/`} class="tag">
+              {displayTag(tag)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .tag-label {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Pill shape, because a tag is metadata. It must never be
+     mistaken for a piece of data. */
+  .tag {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    background: var(--colour-surface-sunk);
+    border: 1px solid var(--colour-rule);
+    border-radius: var(--radius-pill);
+
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+    text-decoration: none;
+
+    /* Touch targets need height even when the text is small. */
+    min-height: 24px;
+    line-height: 1.6;
+  }
+
+  .tag:hover {
+    color: var(--colour-accent);
+    border-color: var(--colour-accent);
+  }
+</style>
