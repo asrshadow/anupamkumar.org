@@ -359,9 +359,21 @@ async function main() {
   let feedText;
 
   try {
+    // Substack sits behind bot protection that refuses requests
+    // which do not look like a real feed reader — and it is
+    // stricter about requests coming from a data centre, which is
+    // where GitHub's build machines live. These headers are what an
+    // ordinary feed reader sends. If the answer is still 403, see
+    // the note at the foot of this file.
     const response = await fetch(FEED_URL, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { "User-Agent": "anupamkumar.org archiver" },
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; anupamkumar.org archiver; +https://anupamkumar.org)",
+        Accept:
+          "application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5",
+        "Accept-Language": "en-GB,en;q=0.9",
+      },
     });
 
     if (!response.ok) {
