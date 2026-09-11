@@ -81,4 +81,29 @@ This step is two minutes of manual work and depends on no automation that can br
 
 ---
 
+## If you wrote it in Substack instead
+
+A piece written in Substack first does not go in `content/essays/` at all. Bring it into
+the repository afterwards with one command:
+
+```bash
+npm run archive-substack
+```
+
+It writes the post into `content/external/` with a link back to the original. Then commit
+it:
+
+```bash
+git add content/external
+git commit -m "content: archive Substack post"
+git push
+```
+
+**Run this on your own computer.** There is a workflow that tries it daily on GitHub, but
+Substack refuses requests from data centres, so it never actually fetches anything. It
+fails harmlessly and is kept in case that ever changes. The command above is the reliable
+way, and nothing is lost by doing it by hand.
+
+---
+
 **Last updated:** 11 September 2026

@@ -28,6 +28,30 @@
 // It prints what it found and what it wrote. Running it twice is
 // safe: existing files are never touched.
 //
+// ------------------------------------------------------------
+// RUN IT ON YOUR OWN COMPUTER. This is the reliable way.
+//
+// There is a workflow that tries this daily on GitHub, but it
+// does not work and probably never will: Substack refuses
+// requests coming from a data centre, which is where GitHub's
+// build machines are, and answers 403 whatever headers are sent.
+// Tested on 11 September 2026 with ordinary feed-reader headers.
+//
+// That workflow is kept because it costs nothing, it fails
+// harmlessly, and it will simply start working if Substack ever
+// relaxes. But it is not what to rely on.
+//
+// The practical routine is one line after publishing on Substack:
+//
+//     npm run archive-substack
+//     git add content/external && git commit -m "content: archive Substack post" && git push
+//
+// This is exactly the degradation the design expects. Nothing
+// about the site depends on the automation existing — that was
+// the point of reading a public feed rather than building on an
+// unofficial API.
+// ------------------------------------------------------------
+//
 // WHAT IT READS AND WRITES
 //   Reads:  the RSS feed at the address below
 //   Writes: content/external/DD-MM-YYYY-slug.md

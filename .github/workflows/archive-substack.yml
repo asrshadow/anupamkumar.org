@@ -17,9 +17,28 @@
 # plain text file in this repository. Substack is a writing
 # surface and a mailing list, never the archive.
 #
-# IF THE FEED IS UNREACHABLE
-# The script says so and exits successfully. Nothing fails, and
-# nothing is lost — the post is simply picked up the next day.
+# ------------------------------------------------------------
+# READ THIS BEFORE RELYING ON IT.
+#
+# THIS WORKFLOW DOES NOT CURRENTLY WORK, and that is expected.
+# Substack refuses requests that come from a data centre, which
+# is where GitHub's build machines are, and answers 403 whatever
+# headers are sent. Tested on 11 September 2026.
+#
+# The run still goes green, because the script is built to give
+# up quietly rather than fail — nothing about this site may
+# depend on Substack being reachable.
+#
+# So the real routine is one command on your own computer, after
+# publishing something on Substack:
+#
+#     npm run archive-substack
+#
+# then commit what it wrote. The essay checklist says so too.
+#
+# This file is kept because it costs nothing, it fails harmlessly,
+# and it will start working on its own if Substack ever relaxes.
+# ------------------------------------------------------------
 # ============================================================
 
 name: Archive Substack posts
