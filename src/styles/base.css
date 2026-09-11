@@ -365,11 +365,26 @@ code {
   border-radius: var(--radius-data);
 }
 
+/* A code block.
+
+   The background is forced to a site token, overriding the one the
+   syntax highlighter sets inline. Without this override a code
+   block would carry the highlighter's own near-black background
+   into the middle of a light essay.
+
+   WHY --colour-surface AND NOT --colour-surface-sunk, which would
+   be the obvious choice for an inset panel: the highlighter's
+   comment grey measures 4.45 to 1 against the sunk colour, which
+   is below the 4.5 to 1 WCAG AA minimum, and 5.04 to 1 against
+   this one. Comments are the part of a code sample that explains
+   it. The margin is small, so it is written down rather than
+   rediscovered. */
+pre.astro-code,
 pre {
   font-family: var(--font-mono);
   font-size: var(--size-sm);
   line-height: 1.6;
-  background: var(--colour-surface-sunk);
+  background: var(--colour-surface) !important;
   border: 1px solid var(--colour-rule);
   border-radius: var(--radius-data);
   padding: var(--space-4);
@@ -385,6 +400,29 @@ pre code {
   border: 0;
   padding: 0;
   font-size: inherit;
+}
+
+/* ---- Code colours in dark mode ------------------------------------
+   The syntax highlighter writes the light colour directly onto each
+   piece of code, and puts the dark colour beside it in a variable
+   called --shiki-dark. Something has to actually use that variable,
+   or a dark page shows the light colours. This is that something.
+
+   The same two blocks as in tokens.css: one for a reader whose
+   device is set to dark, one for a reader who pressed the toggle.
+   Without the second, the toggle would change everything on the
+   page except the code.                                            */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .astro-code,
+  :root:not([data-theme="light"]) .astro-code span {
+    color: var(--shiki-dark) !important;
+  }
+}
+
+:root[data-theme="dark"] .astro-code,
+:root[data-theme="dark"] .astro-code span {
+  color: var(--shiki-dark) !important;
 }
 
 /* ==========================================================================

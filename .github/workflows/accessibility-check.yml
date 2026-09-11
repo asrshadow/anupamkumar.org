@@ -1,0 +1,97 @@
+# ============================================================
+# AUTOMATED ACCESSIBILITY CHECK
+#
+# WHEN THIS RUNS
+# On every push to main, on every pull request, and on demand:
+#     gh workflow run accessibility-check.yml
+#
+# WHAT IT DOES
+# Builds the site, serves it locally on the build machine, and
+# runs every page through Axe, the standard accessibility testing
+# engine. If it finds a violation, THE RUN FAILS.
+#
+# HONEST LIMITS, WHICH MATTER
+# An automated check finds roughly a third of accessibility
+# problems. It can see that an image has no alt text. It cannot
+# see that the alt text says "chart" instead of what the chart
+# shows. It can see a contrast failure. It cannot see that a
+# colour is the only thing distinguishing two lines on a graph.
+#
+# So this catches the careless mistakes and frees attention for
+# the manual checks in CLAUDE.md section 9, which are the ones
+# that actually matter: tab through it with no mouse, zoom to
+# 200%, open it at 360 pixels wide, read the chart's alt text
+# aloud and ask whether it conveys the finding.
+#
+# WHEN IT FAILS
+# Run "gh run view --log-failed" to see which rule broke on which
+# page. Axe names the element and links to an explanation of why
+# the rule exists.
+# ============================================================
+
+name: Accessibility check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the site
+        run: npm run build
+
+      # Serves the built site on the build machine so the checker
+      # has real pages to open, exactly as a reader would see them.
+      # "&" puts it in the background so the next step can run, and
+      # the wait loop gives it a moment to start.
+      - name: Serve the built site
+        run: |
+          npx --yes serve dist --listen 4321 --no-clipboard &
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://localhost:4321/ > /dev/null; then
+              echo "The site is being served."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "The site did not start in time."
+          exit 1
+
+      # Check every page the site actually has. These are listed by
+      # hand rather than crawled, so that a page accidentally
+      # dropped from the build is noticed rather than silently
+      # skipped.
+      - name: Run the accessibility checks
+        run: |
+          npx --yes @axe-core/cli@4 \
+            --exit \
+            --tags wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa \
+            http://localhost:4321/ \
+            http://localhost:4321/writing/ \
+            http://localhost:4321/notes/ \
+            http://localhost:4321/about/ \
+            http://localhost:4321/contact/ \
+            http://localhost:4321/now/ \
+            http://localhost:4321/search/ \
+            http://localhost:4321/404.html \
+            http://localhost:4321/writing/hello/

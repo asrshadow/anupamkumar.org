@@ -34,8 +34,10 @@ const { date, updated, isExternal = false, substackUrl = "" } = Astro.props;
   {
     isExternal && (
       <span class="meta-item badge">
-        First published on
-        {substackUrl ? <a href={substackUrl}>Substack</a> : " Substack"}
+        {/* The explicit space matters. Without it the two pieces run
+            together and the badge reads "First published onSubstack". */}
+        First published on{" "}
+        {substackUrl ? <a href={substackUrl}>Substack</a> : "Substack"}
       </span>
     )
   }

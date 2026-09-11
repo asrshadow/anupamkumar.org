@@ -1,0 +1,109 @@
+# ============================================================
+# ARCHIVE SUBSTACK POSTS INTO THIS REPOSITORY
+#
+# WHEN THIS RUNS
+# Once a day, and on demand by running:
+#     gh workflow run archive-substack.yml
+#
+# WHAT IT DOES
+# Runs scripts/archive-substack.mjs, which reads the Substack
+# public RSS feed and writes any new post into content/external/
+# as a Markdown file. If anything new was written, it commits it,
+# which in turn triggers the deploy workflow and the post appears
+# on the site.
+#
+# WHY IT MATTERS
+# So that wherever the writing happens, it always ends up as a
+# plain text file in this repository. Substack is a writing
+# surface and a mailing list, never the archive.
+#
+# IF THE FEED IS UNREACHABLE
+# The script says so and exits successfully. Nothing fails, and
+# nothing is lost — the post is simply picked up the next day.
+# ============================================================
+
+name: Archive Substack posts
+
+on:
+  schedule:
+    # 04:30 UTC, which is 10:00 in India. The time is deliberately
+    # not on the hour: GitHub runs a great many scheduled jobs at
+    # exactly midnight and on the hour, and queues can be long.
+    - cron: "30 4 * * *"
+
+  workflow_dispatch:
+
+# This workflow writes to the repository, and starts the deploy
+# workflow when it has written something. Nothing else.
+permissions:
+  contents: write
+  actions: write
+
+# Never run two copies at once — they would both try to write the
+# same files and one would fail on push.
+concurrency:
+  group: archive-substack
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The script uses nothing but Node's own built-in features,
+      # so there is nothing to install.
+      - name: Fetch new posts from the Substack feed
+        run: node scripts/archive-substack.mjs
+
+      # Commit only if something actually changed.
+      #
+      # The identity below is GitHub's own automation account. Using
+      # it makes clear in the history which commits were written by
+      # a person and which by this workflow.
+      - name: Commit anything new
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # "git diff --quiet" succeeds when nothing changed, so this
+          # says: if there ARE changes, commit and push them.
+          #
+          # --untracked-files is needed because a brand new post is a
+          # file Git has not seen before, and a plain diff ignores
+          # those entirely.
+          if [ -z "$(git status --porcelain --untracked-files=all -- content/external)" ]; then
+            echo "No new posts. Nothing to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git add content/external
+            git commit -m "content: archive new Substack posts"
+            git push
+            echo "Committed new posts."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # WHY THIS STEP EXISTS, AND IT IS NOT OBVIOUS.
+      #
+      # GitHub deliberately refuses to start a workflow from a commit
+      # that another workflow made. It is a sensible rule — it stops
+      # a workflow that commits from triggering itself forever — but
+      # here it means the deploy workflow would never notice the post
+      # that was just archived, and the site would not update until
+      # the next time something was pushed by hand.
+      #
+      # So the deploy is started explicitly, and only when there was
+      # actually something new.
+      - name: Publish the new posts
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy.yml --ref main

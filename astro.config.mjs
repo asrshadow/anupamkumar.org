@@ -53,14 +53,28 @@ export default defineConfig({
   // Nothing about the pages a reader downloads changes.
   // ----------------------------------------------------------
   markdown: {
-    processor: unified({
-      shikiConfig: {
-        // Colour scheme for code blocks. These two are chosen to
-        // sit comfortably on the site's paper colours in each theme.
-        themes: { light: "github-light", dark: "github-dark" },
-        wrap: true,
+    // Colour scheme for code blocks.
+    //
+    // TWO themes, not one. Astro's default is github-dark for both
+    // light and dark pages, which puts a dark code block in the
+    // middle of a light essay and fails the contrast check. Naming
+    // a light and a dark theme makes the block follow the page.
+    //
+    // The HIGH-CONTRAST variants are deliberate: the ordinary
+    // github themes set comments in a grey that measures under the
+    // 4.5 to 1 WCAG AA minimum against these backgrounds. Comments
+    // are the part of a code sample that explains it, so they are
+    // the last thing that should be hard to read.
+    shikiConfig: {
+      themes: {
+        light: "github-light-high-contrast",
+        dark: "github-dark-high-contrast",
       },
+      // Long lines wrap instead of forcing a sideways scroll.
+      wrap: true,
+    },
 
+    processor: unified({
       // Typographic quotes, proper dashes and ellipses.
       smartypants: true,
 

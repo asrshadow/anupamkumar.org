@@ -1,0 +1,108 @@
+# ============================================================
+# FIND DEAD LINKS
+#
+# WHEN THIS RUNS
+# Every Monday morning, and on demand by running:
+#     gh workflow run check-links.yml
+#
+# WHAT IT DOES
+# Builds the site, then follows every link in it. If any lead
+# nowhere, it opens one issue listing them.
+#
+# WHY THIS MATTERS MORE HERE THAN ON MOST SITES
+# Indian government websites reorganise constantly. indiabudget.gov.in
+# moves documents most years, and sector portals are rebuilt without
+# redirects. Without this check, a two-year-old essay quietly stops
+# being citable and nobody notices, because nobody rereads their own
+# old work looking for broken links.
+#
+# WHAT TO DO WHEN IT FINDS SOMETHING
+# For a source document, find where it moved to and update the link.
+# If it is gone entirely, link to the Internet Archive's copy
+# instead — and consider whether the file should be in that
+# dataset's raw/ folder, where your copy may become the only one.
+#
+# NOTE: this workflow opens issues, so repository Issues must be
+# switched on for it to work. They are currently off. Switch them
+# on with:
+#     gh repo edit --enable-issues
+# or leave them off and read the run's log instead, which lists
+# the same broken links.
+# ============================================================
+
+name: Check for dead links
+
+on:
+  schedule:
+    # 05:00 UTC on Mondays, which is 10:30 in India.
+    - cron: "0 5 * * 1"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the site
+        run: npm run build
+
+      # Lychee follows every link in the built pages.
+      #
+      # --max-concurrency is kept low deliberately. Government sites
+      # are often slow and some treat a burst of requests as an
+      # attack and block the address.
+      - name: Follow every link
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --max-concurrency 4
+            --timeout 30
+            --max-retries 2
+            --accept 200,201,202,203,204,206,301,302,303,307,308,999
+            --exclude-path dist/pagefind
+            'dist/**/*.html'
+          output: link-report.md
+          # Do not fail the workflow. A dead link is something to
+          # look at, not a reason to stop everything.
+          fail: false
+
+      # Always put the report on the run's own summary page, so it
+      # is readable whether or not Issues are switched on.
+      - name: Show the report on the run summary
+        if: always()
+        run: cat link-report.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      # One issue, reopened and updated each week rather than a new
+      # one every time. A workflow that opens a fresh issue weekly
+      # is a workflow people start ignoring.
+      #
+      # continue-on-error means a failure here does not fail the run.
+      # Issues are currently switched off for this repository, so
+      # this step is expected to fail until they are switched on.
+      # The report above is still there either way.
+      - name: Open or update the issue
+        if: steps.lychee.outputs.exit_code != '0'
+        continue-on-error: true
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: Dead links found on the site
+          content-filepath: link-report.md
