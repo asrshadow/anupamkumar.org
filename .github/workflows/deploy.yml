@@ -1,0 +1,110 @@
+# ============================================================
+# BUILD AND PUBLISH THE SITE
+#
+# WHEN THIS RUNS
+# Every time something is pushed to the main branch. Also on
+# demand, from the Actions tab or by running:
+#     gh workflow run deploy.yml
+#
+# WHAT IT DOES
+# Installs the site's dependencies on one of GitHub's computers,
+# builds the site, builds the search index, and publishes the
+# result to GitHub Pages.
+#
+# THIS IS THE FILE THAT MAKES THE SITE EXIST. Nothing runs on
+# Anupam's own machine. After a push, a green tick appears beside
+# the commit on GitHub, and the live site updates a minute later.
+#
+# IF IT FAILS
+# Run "gh run view --log-failed" to see which step broke and why.
+# The most common cause by far is that "npm run build" also fails
+# on your own computer — try that first.
+# ============================================================
+
+name: Build and deploy
+
+on:
+  # Publish whenever main changes.
+  push:
+    branches: [main]
+
+  # Allow running it by hand without changing anything.
+  workflow_dispatch:
+
+# ------------------------------------------------------------
+# What this workflow is allowed to do.
+#
+# Deliberately minimal. It may read the repository and publish to
+# Pages, and nothing else. A workflow with more permission than it
+# needs is a standing risk for no benefit.
+# ------------------------------------------------------------
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# ------------------------------------------------------------
+# Never run two deploys at once.
+#
+# Two builds publishing at the same time can leave the live site
+# in a half-updated state. If a second push arrives while one is
+# running, this cancels the older one and keeps the newer.
+# ------------------------------------------------------------
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Copy the repository onto the build machine.
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      # Install Node.js. The version is pinned to the long-term
+      # support line rather than "latest", so a new Node release
+      # can never break a build without the change being deliberate.
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # "npm ci" installs exactly the versions recorded in
+      # package-lock.json. It is the right command here because a
+      # build on GitHub must produce the same site as a build at
+      # home — "npm install" could quietly pick up newer versions.
+      - name: Install dependencies
+        run: npm ci
+
+      # Builds the site into dist/, then builds the search index.
+      # Both happen in "npm run build" — see package.json.
+      - name: Build the site
+        run: npm run build
+
+      # Tell the Pages service what is coming.
+      - name: Prepare GitHub Pages
+        uses: actions/configure-pages@v5
+
+      # Hand the finished dist/ folder to the publishing step.
+      - name: Package the built site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  # A separate job, because GitHub requires publishing to happen in
+  # its own step with its own environment.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
