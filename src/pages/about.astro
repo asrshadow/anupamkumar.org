@@ -1,113 +1,281 @@
 ---
 // ============================================================
-// /about/ — who this is and what the site is for.
+// /about/ — who Anupam is, and what the site is for.
 //
-// The text below is a starting point to be rewritten in Anupam's
-// own words. Everything in it is true of the project; none of it
-// makes claims about his career that he has not made himself.
+// The biography comes first, then the material about the site
+// that used to live on the home page.
+//
+// THE PHOTO. It is imported from src/assets/ rather than sitting
+// in public/, and that difference matters. A file in public/ is
+// served exactly as it is, at full size. A file imported like
+// this goes through Astro's optimiser, which resizes it, makes a
+// sharper copy for high-density screens, and writes the width and
+// height into the markup so the page does not jump as it loads.
 // ============================================================
 
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PageShell from "../components/PageShell.astro";
+import SideBlock from "../components/SideBlock.astro";
+import { Image } from "astro:assets";
+import profilePhoto from "../assets/profile-photo.webp";
 ---
 
 <BaseLayout
   title="About"
   description="About Anupam Kumar and this site: writing, cleaned datasets and browser-side tools on public finance and public policy."
 >
-  <article class="prose" data-pagefind-body>
-    <h1>About</h1>
+  <PageShell asideLabel="Elsewhere">
+    <article data-pagefind-body>
+      <h1>About</h1>
 
-    <p>
-      I work on public finance and public policy, and I write about economics and
-      geoeconomics more broadly. This site is where that writing lives, alongside
-      the data behind it.
-    </p>
+      <div class="profile">
+        <!-- The panel behind the photo is not decoration. The image
+             has a transparent background and the suit is black, so
+             on the dark theme the silhouette would dissolve into the
+             page. The sunk surface is a step lighter than the page
+             in dark and a step darker in light, which gives the
+             outline something to sit against in both.
 
-    <h2>What this site is for</h2>
+             loading="eager" because it is at the top of the page;
+             lazy-loading something already in view only delays it. -->
+        <div class="profile-photo">
+          <Image
+            src={profilePhoto}
+            alt="Anupam Kumar"
+            width={192}
+            densities={[1, 2]}
+            loading="eager"
+          />
+        </div>
 
-    <p>
-      Its purpose is narrow and deliberate: <strong
-        >to make economic information usable by people who are not economists</strong
-      >. Public finance in India is not short of numbers. It is short of numbers
-      anyone can find, check and reuse.
-    </p>
+        <div class="profile-text prose">
+          <h2>Anupam Kumar</h2>
 
-    <p>
-      So the site holds three things, in the order they matter. Writing, which is
-      the point. Cleaned datasets, each carrying its source, the date it was
-      retrieved, a description of every column with its unit, and a script that
-      rebuilds it from the original files. And small tools that run entirely in
-      your browser.
-    </p>
+          <p>
+            I am a Program Associate on the Strategic Public Finance team at
+            the{" "}
+            <a href="https://cegis.org">
+              Centre for Effective Governance of Indian States
+            </a>{" "}
+            (CEGIS), where I work with state governments on how public money is
+            raised, allocated and spent. Before joining CEGIS full time I
+            interned with Absolute Reports, CHRIST Consulting and CEGIS itself —
+            research, project management and a stretch in the education sector,
+            which is where a good deal of what I write here comes from.
+          </p>
 
-    <h2>On the data</h2>
+          <p>
+            I hold an MSc in Economics and Analytics from CHRIST (Deemed to be
+            University), Pune–Lavasa, and an MBA from Quantic School of Business
+            and Technology, Washington, D.C., which I attended on a full
+            scholarship. My first degree is a BCom Honours from CHRIST (Deemed
+            to be University), Bangalore, where I held consecutive scholarships
+            for leadership.
+          </p>
 
-    <p>
-      Anyone can post a spreadsheet. What makes a dataset worth citing is that it
-      answers the four questions a careful reader always has: where exactly did
-      this come from, what vintage is it, what are the units, and what was
-      changed?
-    </p>
+          <p>
+            What holds my attention is the point where data-driven methods meet
+            the social sector — not the technology for its own sake, but the
+            narrower question of whether better measurement changes what a
+            government actually does. Away from work I read, write, and am
+            always glad of a good argument about any of the above.
+          </p>
 
-    <p>
-      Every dataset here answers all four. The original files are kept untouched
-      alongside the cleaned ones, and the cleaning can be re-run from scratch by
-      anyone who wants to check it.
-    </p>
+          <p>
+            I am on{" "}
+            <a href="https://www.linkedin.com/in/anupamkumar-connect/">LinkedIn</a>,
+            and you can write to me at{" "}
+            <a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a>.
+          </p>
+        </div>
+      </div>
 
-    <p>
-      One thing in particular gets stated rather than assumed: Budget Estimates,
-      Revised Estimates and Actuals for the same year are three different facts,
-      not one figure corrected twice. Conflating them is the most common error in
-      Indian fiscal datasets, and it quietly corrupts every comparison built on
-      top.
-    </p>
+      <div class="prose">
+        <h2>What this site is for</h2>
 
-    <h2>On the tools</h2>
+        <p>
+        Its purpose is narrow and deliberate: <strong
+          >to make economic information usable by people who are not economists</strong
+        >. Public finance in India is not short of numbers. It is short of
+        numbers anyone can find, check and reuse.
+        </p>
 
-    <p>
-      Everything computes in your browser. If you open a state finance
-      spreadsheet in a tool here, that file never leaves your laptop, because
-      there is no server for it to go to. For anyone in government, a think tank
-      or a newsroom handling figures that are not yet public, that is not a
-      technical detail.
-    </p>
+        <p>
+        So the site holds three things, in the order they matter. Writing, which
+        is the point. Cleaned datasets, each carrying its source, the date it
+        was retrieved, a description of every column with its unit, and a script
+        that rebuilds it from the original files. And small tools that run
+        entirely in your browser.
+        </p>
 
-    <h2>On how this site is built</h2>
+        <h2>On the data</h2>
 
-    <p>
-      It is built to outlive its hosting. Everything of value — every essay,
-      every dataset, every script — is a plain text file in
-      <a href="https://github.com/asrshadow/anupamkumar.org">a public repository</a>,
-      readable in any text editor, with no database and no service required to
-      make sense of it.
-    </p>
+        <p>
+        Anyone can post a spreadsheet. What makes a dataset worth citing is that
+        it answers the four questions a careful reader always has: where exactly
+        did this come from, what vintage is it, what are the units, and what was
+        changed?
+        </p>
 
-    <p>
-      The hosting is assumed to be temporary and the domain is assumed to be
-      permanent. If this site has to be rebuilt somewhere else in 2035, that is
-      a clone and a build, not a recovery project.
-    </p>
+        <p>
+        Every dataset here answers all four. The original files are kept
+        untouched alongside the cleaned ones, and the cleaning can be re-run
+        from scratch by anyone who wants to check it.
+        </p>
 
-    <h2>Reuse and citation</h2>
+        <p>
+        One thing in particular gets stated rather than assumed: Budget
+        Estimates, Revised Estimates and Actuals for the same year are three
+        different facts, not one figure corrected twice. Conflating them is the
+        most common error in Indian fiscal datasets, and it quietly corrupts
+        every comparison built on top.
+        </p>
 
-    <p>
-      The writing and the datasets are published under
-      <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, and
-      the code under the MIT licence. Please reuse any of it, with credit.
-    </p>
+        <h2>On the tools</h2>
 
-    <p>
-      Official figures republished here keep their own publisher's licence, which
-      is recorded with each dataset.
-    </p>
+        <p>
+        Everything computes in your browser. If you open a state finance
+        spreadsheet in a tool here, that file never leaves your laptop, because
+        there is no server for it to go to. For anyone in government, a think
+        tank or a newsroom handling figures that are not yet public, that is not
+        a technical detail.
+        </p>
 
-    <h2>Getting in touch</h2>
+        <h2>On how this site is built</h2>
 
-    <p>
-      Corrections are especially welcome, and on a site whose whole claim is
-      provenance, a correction is a contribution rather than a complaint. Write
-      to <a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a>.
-    </p>
-  </article>
+        <p>
+        It is built to outlive its hosting. Everything of value — every essay,
+        every dataset, every script — is a plain text file in{" "}
+        <a href="https://github.com/asrshadow/anupamkumar.org">a public repository</a>,
+        readable in any text editor, with no database and no service required to
+        make sense of it.
+        </p>
+
+        <p>
+        The hosting is assumed to be temporary and the domain is assumed to be
+        permanent. If this site has to be rebuilt somewhere else in 2035, that
+        is a clone and a build, not a recovery project.
+        </p>
+
+        <p>
+        Nothing here tracks you. There is no analytics script, no cookie banner
+        and nothing to consent to, because there is no server collecting
+        anything in the first place.
+        </p>
+
+        <h2>Reuse and citation</h2>
+
+        <p>
+        The writing and the datasets are published under{" "}
+        <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, and
+        the code under the MIT licence. Please reuse any of it, with credit.
+        </p>
+
+        <p>
+        Official figures republished here keep their own publisher's licence,
+        which is recorded with each dataset.
+        </p>
+
+        <h2>Corrections</h2>
+
+        <p>
+          Corrections are especially welcome. On a site whose whole claim is
+          provenance, a correction is a contribution rather than a complaint.
+        </p>
+      </div>
+    </article>
+
+    <Fragment slot="aside">
+      <SideBlock title="Elsewhere">
+        <ul>
+          <li>
+            <a href="https://www.linkedin.com/in/anupamkumar-connect/">LinkedIn</a>
+          </li>
+          <li>
+            <a href="https://asranupam.substack.com">Newsletter on Substack</a>
+          </li>
+          <li><a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a></li>
+          <li>
+            <a href="https://github.com/asrshadow/anupamkumar.org">Source on GitHub</a>
+          </li>
+        </ul>
+      </SideBlock>
+
+      <SideBlock title="This site">
+        <ul class="section-links">
+          <li>
+            <a href="/writing/">Writings and notes</a>
+            <span>Essays, notes and archived newsletter pieces.</span>
+          </li>
+          <li>
+            <a href="/datasets/">Datasets</a>
+            <span>Cleaned public finance data, with its provenance.</span>
+          </li>
+          <li>
+            <a href="/tools/">Tools</a>
+            <span>Small things that run in your browser.</span>
+          </li>
+        </ul>
+      </SideBlock>
+    </Fragment>
+  </PageShell>
 </BaseLayout>
+
+<style>
+  /* Photo beside the biography on a wide screen, above it on a
+     phone. auto-fit with a minimum does that without a media
+     query, and never squeezes the text into a narrow ribbon. */
+  .profile {
+    display: grid;
+    grid-template-columns: auto minmax(16rem, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+    margin-bottom: var(--space-7);
+  }
+
+  @media (max-width: 34rem) {
+    .profile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* See the note in the markup: this panel is what keeps a
+     transparent-backed portrait in a dark suit from dissolving
+     into the page on the dark theme. */
+  .profile-photo {
+    padding: var(--space-4);
+    background: var(--colour-surface-sunk);
+    border-radius: var(--radius-data);
+    line-height: 0; /* no phantom gap under the image */
+
+    /* Hug the photo instead of stretching. A grid item fills its
+       column by default, which on a phone left the panel running
+       the full width of the screen with the photo marooned in the
+       middle of it. */
+    justify-self: start;
+  }
+
+  .profile-photo :global(img) {
+    border-radius: 0;
+    margin: 0;
+    height: auto;
+  }
+
+  /* The first heading in the column should sit level with the top
+     of the photo rather than pushing away from it. */
+  .profile-text > :first-child {
+    margin-top: 0;
+  }
+
+  /* Each section link with a line saying what is there, so the
+     block is useful rather than a bare list of words. */
+  .section-links li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .section-links span {
+    color: var(--colour-ink-muted);
+  }
+</style>
