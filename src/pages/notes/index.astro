@@ -1,39 +1,100 @@
 ---
 // ============================================================
-// /notes/ — short pieces, listed newest first.
+// /notes/ — short pieces only, newest first.
+//
+// This is a filtered view of /writing/, not a separate section.
+// Both addresses were published, so both stay live and neither
+// redirects to the other.
+//
+// It is reachable from the sidebar on /writing/ rather than from
+// the navigation, because to a reader a note and an essay are both
+// just things he has written.
 // ============================================================
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageShell from "../../components/PageShell.astro";
+import SideBlock from "../../components/SideBlock.astro";
 import PieceCard from "../../components/PieceCard.astro";
-import { getNotes } from "../../lib/writing";
+import { getNotes, getAllTags } from "../../lib/writing";
 
 const notes = await getNotes();
+const tags = await getAllTags();
+
+function displayTag(tag: string): string {
+  const spaced = tag.replace(/-/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 ---
 
 <BaseLayout
   title="Notes"
   description="Short pieces: reactions to released figures, clarifications, and working thoughts on public finance and policy."
 >
-  <header class="page-header">
-    <h1>Notes</h1>
-    <p class="page-intro">
-      Shorter pieces with less ceremony. A reaction to a released figure, a
-      clarification, or a working thought. The difference from an essay is one
-      of weight, not of care.
-    </p>
-  </header>
+  <PageShell asideLabel="Browse this section">
+    <header class="page-header">
+      <h1>Notes</h1>
+      <p class="page-intro">
+        Shorter pieces with less ceremony. A reaction to a released figure, a
+        clarification, or a working thought. The difference from an essay is one
+        of weight, not of care.
+      </p>
 
-  {
-    notes.length > 0 ? (
-      <div class="piece-list">
-        {notes.map((note) => (
-          <PieceCard piece={note} />
-        ))}
-      </div>
-    ) : (
-      <p class="empty">No notes yet.</p>
-    )
-  }
+      <!-- Says plainly that this is one view of a larger list, so a
+           reader who arrives here from a search result does not
+           assume it is everything. -->
+      <p class="filtered-note">
+        This is the notes only. <a href="/writing/">All writings and notes</a> has
+        the essays and the archived Substack pieces as well.
+      </p>
+    </header>
+
+    {
+      notes.length > 0 ? (
+        <div class="piece-list">
+          {notes.map((note) => (
+            <PieceCard piece={note} headingLevel={2} />
+          ))}
+        </div>
+      ) : (
+        <p class="empty">No notes yet.</p>
+      )
+    }
+
+    <Fragment slot="aside">
+      {
+        tags.length > 0 && (
+          <SideBlock title="Browse by subject">
+            <ul class="tag-links">
+              {tags.map(({ tag, count }) => (
+                <li>
+                  <a href={`/tags/${tag}/`}>
+                    {displayTag(tag)}
+                    <span class="count">{count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </SideBlock>
+        )
+      }
+
+      <SideBlock title="In this section">
+        <ul>
+          <li><a href="/writing/">All pieces</a></li>
+          <li>
+            <a href="/notes/" aria-current="page" class="current">Notes only</a>
+          </li>
+        </ul>
+      </SideBlock>
+
+      <SideBlock title="Elsewhere">
+        <ul>
+          <li><a href="https://asranupam.substack.com">Newsletter on Substack</a></li>
+          <li><a href="/rss.xml">RSS feed</a></li>
+        </ul>
+      </SideBlock>
+    </Fragment>
+  </PageShell>
 </BaseLayout>
 
 <style>
@@ -49,7 +110,31 @@ const notes = await getNotes();
     text-wrap: pretty;
   }
 
+  .filtered-note {
+    margin: var(--space-4) 0 0;
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
   .empty {
     color: var(--colour-ink-muted);
+  }
+
+  .tag-links a {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--colour-ink-muted);
+  }
+
+  .current {
+    font-weight: 700;
+    color: var(--colour-ink);
   }
 </style>

@@ -5,58 +5,99 @@
 // Essays, notes and archived Substack pieces are merged into one
 // list, because to a reader they are all just "things he has
 // written". Where each was published shows on the entry itself.
+//
+// /notes/ is the same list filtered to notes only. Both addresses
+// were published, so both stay.
 // ============================================================
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageShell from "../../components/PageShell.astro";
+import SideBlock from "../../components/SideBlock.astro";
 import PieceCard from "../../components/PieceCard.astro";
 import { getAllWriting, getAllTags } from "../../lib/writing";
 
 const pieces = await getAllWriting();
 const tags = await getAllTags();
+
+function displayTag(tag: string): string {
+  const spaced = tag.replace(/-/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 ---
 
 <BaseLayout
-  title="Writing"
+  title="Writings and notes"
   description="Essays and notes on public finance, public policy, economics and geoeconomics."
 >
-  <header class="page-header">
-    <h1>Writing</h1>
-    <p class="page-intro">
-      Essays and notes on public finance, public policy, economics and
-      geoeconomics. Pieces marked as first published on Substack are archived
-      here so they stay available.
-    </p>
-  </header>
+  <PageShell asideLabel="Browse this section">
+    <header class="page-header">
+      <!-- Sentence case here, title case in the navigation. A
+           navigation label is a name for a place; a heading is a
+           phrase on a page. -->
+      <h1>Writings and notes</h1>
+      <p class="page-intro">
+        Essays and notes on public finance, public policy, economics and
+        geoeconomics. Pieces marked as first published on Substack are archived
+        here so they stay available.
+      </p>
+    </header>
 
-  {
-    tags.length > 0 && (
-      <nav class="tag-nav" aria-label="Browse by subject">
-        <h2 class="section-heading">Browse by subject</h2>
-        <ul>
-          {tags.map(({ tag, count }) => (
-            <li>
-              <a href={`/tags/${tag}/`}>
-                {tag.replace(/-/g, " ")}
-                <span class="count">{count}</span>
-              </a>
-            </li>
+    {
+      pieces.length > 0 ? (
+        <div class="piece-list">
+          {pieces.map((piece) => (
+            <PieceCard piece={piece} headingLevel={2} />
           ))}
-        </ul>
-      </nav>
-    )
-  }
+        </div>
+      ) : (
+        <p class="empty">Nothing published yet.</p>
+      )
+    }
 
-  {
-    pieces.length > 0 ? (
-      <div class="piece-list">
-        {pieces.map((piece) => (
-          <PieceCard piece={piece} />
-        ))}
-      </div>
-    ) : (
-      <p class="empty">Nothing published yet.</p>
-    )
-  }
+    <Fragment slot="aside">
+      {
+        /* The full list of subjects belongs here, on the page that
+           holds every piece. The home page shows only the top eight,
+           because a sidebar cannot hold forty. */
+        tags.length > 0 && (
+          <SideBlock title="Browse by subject">
+            <ul class="tag-links">
+              {tags.map(({ tag, count }) => (
+                <li>
+                  <a href={`/tags/${tag}/`}>
+                    {displayTag(tag)}
+                    <span class="count">{count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </SideBlock>
+        )
+      }
+
+      <SideBlock title="In this section">
+        <ul>
+          <li>
+            {/* aria-current tells a screen reader which view the
+                reader is on. The bold weight says the same thing to
+                everyone else — colour and weight alone would leave
+                a screen reader with no way to tell. */}
+            <a href="/writing/" aria-current="page" class="current">
+              All pieces
+            </a>
+          </li>
+          <li><a href="/notes/">Notes only</a></li>
+        </ul>
+      </SideBlock>
+
+      <SideBlock title="Elsewhere">
+        <ul>
+          <li><a href="https://asranupam.substack.com">Newsletter on Substack</a></li>
+          <li><a href="/rss.xml">RSS feed</a></li>
+        </ul>
+      </SideBlock>
+    </Fragment>
+  </PageShell>
 </BaseLayout>
 
 <style>
@@ -72,54 +113,30 @@ const tags = await getAllTags();
     text-wrap: pretty;
   }
 
-  .tag-nav {
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-5);
-    border-bottom: 1px solid var(--colour-rule);
-  }
-
-  .tag-nav ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .tag-nav a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: 32px;
-    padding: var(--space-1) var(--space-3);
-
-    background: var(--colour-surface-sunk);
-    border: 1px solid var(--colour-rule);
-    border-radius: var(--radius-pill);
-
-    font-family: var(--font-sans);
-    font-size: var(--size-xs);
+  .empty {
     color: var(--colour-ink-muted);
-    text-decoration: none;
-    text-transform: capitalize;
   }
 
-  .tag-nav a:hover {
-    color: var(--colour-accent);
-    border-color: var(--colour-accent);
+  /* Each subject on its own line with its count pushed right, so
+     the numbers form a column the eye can compare down. */
+  .tag-links a {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
   }
 
-  /* The count is a figure, so it is set in mono like every other
-     number on the site. */
+  /* A count is a figure, so it is mono with tabular digits like
+     every other number on the site. */
   .count {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: var(--size-xs);
     color: var(--colour-ink-muted);
   }
 
-  .empty {
-    color: var(--colour-ink-muted);
+  /* The view the reader is already on. Marked by weight and colour
+     together, never by colour alone. */
+  .current {
+    font-weight: 700;
+    color: var(--colour-ink);
   }
 </style>

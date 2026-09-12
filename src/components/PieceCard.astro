@@ -15,17 +15,37 @@ import TagList from "./TagList.astro";
 
 interface Props {
   piece: Piece;
+
   /** Hide tags in places where they would be repetitive, like a tag page. */
   showTags?: boolean;
+
+  /**
+   * Whether the title is an <h2> or an <h3>.
+   *
+   * This is not a style choice — the two look identical. Headings
+   * on a page must never skip a level, because a screen reader user
+   * navigates by them and a gap reads as missing content.
+   *
+   * So it depends on what the list sits under. On a page where the
+   * list follows the <h1> directly, these are <h2>. On the home
+   * page they sit under an <h2> saying "More recent writing", so
+   * there they are <h3>, which is the default.
+   */
+  headingLevel?: 2 | 3;
 }
 
-const { piece, showTags = true } = Astro.props;
+const { piece, showTags = true, headingLevel = 3 } = Astro.props;
+
+// Build the tag name from the level. The capital letter matters:
+// Astro treats a lowercase name as a literal HTML tag and a
+// capitalised one as a value to look up.
+const Heading = `h${headingLevel}` as "h2" | "h3";
 ---
 
 <article class="piece-card">
-  <h3 class="piece-title">
+  <Heading class="piece-title">
     <a href={piece.url}>{piece.title}</a>
-  </h3>
+  </Heading>
 
   <PostMeta
     date={piece.date}

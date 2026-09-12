@@ -44,7 +44,7 @@ const countWords = pieces.length === 1 ? "1 piece" : `${pieces.length} pieces`;
   </header>
 
   <div class="piece-list">
-    {pieces.map((piece) => <PieceCard piece={piece} showTags={false} />)}
+    {pieces.map((piece) => <PieceCard piece={piece} showTags={false} headingLevel={2} />)}
   </div>
 
   <p class="back">
