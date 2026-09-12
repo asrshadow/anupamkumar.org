@@ -66,8 +66,10 @@ const year = new Date().getFullYear();
 <style>
   .site-footer {
     margin-top: var(--space-9);
-    border-top: 1px solid var(--colour-rule);
-    background: var(--colour-paper);
+    /* The same band as the header, closing the page the way the header
+       opens it. */
+    border-top: 1px solid var(--colour-chrome-rule);
+    background: var(--colour-chrome);
   }
 
   .footer-inner {
@@ -120,6 +122,12 @@ const year = new Date().getFullYear();
     max-width: var(--width-page);
     margin: 0 auto;
     padding: var(--space-4) var(--width-gutter) var(--space-6);
+
+    /* --colour-rule here, NOT --colour-chrome-rule, and that is deliberate.
+       This line is inside the band, separating two parts of the footer.
+       --colour-chrome-rule is for the single edge where the band meets the
+       page, and using it here would make an internal divider as strong as
+       the boundary of the whole footer. */
     border-top: 1px solid var(--colour-rule);
   }
 

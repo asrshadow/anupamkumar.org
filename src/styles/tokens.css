@@ -27,6 +27,29 @@
   --colour-surface: #ffffff; /* cards, tables, raised areas */
   --colour-surface-sunk: #f1f1ed; /* code blocks, inset panels */
 
+  /* --- Chrome — the band behind the header and footer --------------------
+     One luminance step away from the page, so the structure of the page is
+     visible without a border having to do all the work. The separation from
+     --colour-paper is 1.11:1 here and 1.13:1 in dark — enough to read as a
+     band, not enough to read as a stripe.
+
+     Deliberately a near-neutral and never a hue. The header and footer are
+     the largest continuous areas of colour on the site, and the rule
+     against large areas of saturated colour is the eye-comfort rule that
+     actually matters.
+
+     EVERY FOREGROUND PUT ON THIS BAND PASSES. Measured:
+       --colour-ink            14.87:1   AAA
+       --colour-ink-muted       5.04:1   AA
+       --colour-accent          6.27:1   AA
+       --colour-border-input    3.65:1   passes the 3:1 minimum for a control
+
+     That last row is the tight one. It is the border of the search field in
+     the header, and it is the reason this band cannot be made any darker.
+     IF --colour-chrome IS EVER CHANGED, RE-MEASURE THAT ROW FIRST.        */
+  --colour-chrome: #ecece5; /* header and footer background */
+  --colour-chrome-rule: #c9cac2; /* the hairline between chrome and page */
+
   /* --- Ink ---------------------------------------------------------------
      Text colours. Two only: full strength, and muted for supporting text. */
   --colour-ink: #16191c; /* body text.     16.4:1 — AAA */
@@ -97,6 +120,9 @@
     --colour-paper: #14171a;
     --colour-surface: #1b1f23;
     --colour-surface-sunk: #22272c;
+    --colour-chrome: #1e2227; /* band: ink 13.23:1, muted 6.05:1,
+                                        accent 7.31:1, input border 3.24:1 */
+    --colour-chrome-rule: #3b424a;
     --colour-ink: #e9eae6; /* 14.9:1 — AAA */
     --colour-ink-muted: #98a0ab; /*  6.8:1 — AA  */
     --colour-rule: #2f353b;
@@ -135,6 +161,8 @@
   --colour-paper: #14171a;
   --colour-surface: #1b1f23;
   --colour-surface-sunk: #22272c;
+  --colour-chrome: #1e2227;
+  --colour-chrome-rule: #3b424a;
   --colour-ink: #e9eae6;
   --colour-ink-muted: #98a0ab;
   --colour-rule: #2f353b;
@@ -279,4 +307,11 @@
 :root {
   --width-page: 1120px; /* the widest the content area ever gets */
   --width-gutter: var(--space-5); /* the side margin, never less than this */
+
+  /* The right-hand column, on the pages that have one. This is the ONLY
+     permitted width for a sidebar — a page may not invent its own. Below
+     64rem the sidebar stops being a column and moves under the content,
+     because at 18rem it would otherwise start squeezing the reading
+     column. See section 8.8 of CLAUDE.md.                                */
+  --width-aside: 18rem;
 }

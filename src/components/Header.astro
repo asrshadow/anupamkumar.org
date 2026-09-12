@@ -61,8 +61,11 @@ function isCurrent(href: string): boolean {
 
 <style>
   .site-header {
-    border-bottom: 1px solid var(--colour-rule);
-    background: var(--colour-paper);
+    /* The header sits on its own band, one luminance step from the page,
+       so the top of the page has a readable edge without a heavy border.
+       The rule below it is a matching step darker again. */
+    border-bottom: 1px solid var(--colour-chrome-rule);
+    background: var(--colour-chrome);
   }
 
   .header-inner {
