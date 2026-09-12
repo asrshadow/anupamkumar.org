@@ -163,6 +163,56 @@ export async function getPiecesByTag(tag: string): Promise<Piece[]> {
   return all.filter((piece) => piece.tags.includes(tag));
 }
 
+/**
+ * Other pieces that share at least one tag with this one.
+ *
+ * Ranked by how many tags they share, and by date where that ties,
+ * so the most closely related piece comes first rather than merely
+ * the most recent one.
+ *
+ * A PIECE WITH NO TAGS GETS AN EMPTY LIST, and the block that shows
+ * this is then not drawn at all. There is deliberately no fallback
+ * to "the most recent pieces": an unrelated list under a heading
+ * that says "Related" is worse than no list, because it teaches a
+ * reader that the heading cannot be trusted.
+ */
+export async function getRelated(piece: Piece, limit = 4): Promise<Piece[]> {
+  if (piece.tags.length === 0) return [];
+
+  const everything = await getAllWriting();
+
+  const scored = [];
+
+  for (const other of everything) {
+    // Skip the piece itself.
+    //
+    // Compared by URL rather than by slug, because an essay and a
+    // note could in principle be given the same slug, and their
+    // URLs never collide. Comparing slugs would then hide an
+    // unrelated piece from its own related list.
+    if (other.url === piece.url) continue;
+
+    // How many tags do the two have in common?
+    let shared = 0;
+    for (const tag of other.tags) {
+      if (piece.tags.includes(tag)) shared = shared + 1;
+    }
+
+    if (shared === 0) continue;
+
+    scored.push({ piece: other, shared });
+  }
+
+  // Most tags in common first. Where two pieces share the same
+  // number, the newer one comes first.
+  scored.sort((a, b) => {
+    if (b.shared !== a.shared) return b.shared - a.shared;
+    return b.piece.date.getTime() - a.piece.date.getTime();
+  });
+
+  return scored.slice(0, limit).map((entry) => entry.piece);
+}
+
 // ============================================================
 // STEP 7 — Dates, written the way a person reads them
 //

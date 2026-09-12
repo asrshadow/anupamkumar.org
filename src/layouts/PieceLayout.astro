@@ -9,10 +9,13 @@
 // ============================================================
 
 import BaseLayout from "./BaseLayout.astro";
+import PageShell from "../components/PageShell.astro";
+import SideBlock from "../components/SideBlock.astro";
 import PostMeta from "../components/PostMeta.astro";
 import TagList from "../components/TagList.astro";
 import DataBox from "../components/DataBox.astro";
 import type { Piece } from "../lib/writing";
+import { getRelated } from "../lib/writing";
 
 interface Props {
   piece: Piece;
@@ -20,6 +23,11 @@ interface Props {
 
 const { piece } = Astro.props;
 const data = piece.entry.data;
+
+// Up to four other pieces sharing at least one tag with this one.
+// Empty when the piece has no tags, and the block is then not
+// drawn — see getRelated for why there is no fallback list.
+const related = await getRelated(piece, 4);
 
 // Which address should search engines treat as the original?
 //
@@ -38,59 +46,125 @@ const canonicalUrl =
   canonicalUrl={canonicalUrl}
   ogType="article"
 >
-  <article class="piece" data-pagefind-body>
-    <header class="piece-header">
-      <h1>{data.title}</h1>
+  <PageShell asideLabel="About this piece">
+    <article class="piece" data-pagefind-body>
+      <header class="piece-header">
+        <h1>{data.title}</h1>
 
-      <p class="standfirst">{data.description}</p>
+        <p class="standfirst">{data.description}</p>
 
-      <PostMeta
-        date={piece.date}
-        updated={piece.updated}
-        isExternal={piece.isExternal}
-        substackUrl={piece.substackUrl}
-      />
-    </header>
-
-    {
-      /* An archived Substack piece says so plainly at the top and
-         links to the original, so a reader always knows which copy
-         they are looking at. */
-      piece.isExternal && (
-        <aside class="external-notice">
-          <p>
-            This was first published on{" "}
-            <a href={piece.substackUrl}>Substack</a>, and is archived here so it
-            stays available. The version on Substack is the original.
-          </p>
-        </aside>
-      )
-    }
-
-    <!-- The text itself. .prose sets serif, 18px, and the 68
-         character reading measure. -->
-    <div class="prose">
-      <slot />
-    </div>
-
-    <footer class="piece-footer">
-      <DataBox datasets={data.datasets} />
-
-      <TagList tags={data.tags} label="Tagged" />
+        <PostMeta
+          date={piece.date}
+          updated={piece.updated}
+          isExternal={piece.isExternal}
+          substackUrl={piece.substackUrl}
+        />
+      </header>
 
       {
-        /* A piece written here that was also sent to the newsletter
-           links out to that copy, so a reader can see the discussion
-           there. */
-        !piece.isExternal && piece.substackUrl && (
-          <p class="cross-post">
-            This was also sent to subscribers —{" "}
-            <a href={piece.substackUrl}>read it on Substack</a>.
-          </p>
+        /* An archived Substack piece says so plainly at the top and
+           links to the original, so a reader always knows which copy
+           they are looking at. */
+        piece.isExternal && (
+          <aside class="external-notice">
+            <p>
+              This was first published on{" "}
+              <a href={piece.substackUrl}>Substack</a>, and is archived here so
+              it stays available. The version on Substack is the original.
+            </p>
+          </aside>
         )
       }
-    </footer>
-  </article>
+
+      <!-- The text itself. .prose sets serif, 18px, and the 68
+           character reading measure. -->
+      <div class="prose">
+        <slot />
+      </div>
+
+      <footer class="piece-footer">
+        <DataBox datasets={data.datasets} />
+
+        {
+          /* The tags appear here AND in the sidebar, on purpose: at
+             the foot for someone who has read to the end, in the
+             sidebar for someone deciding whether to start. */
+        }
+        <TagList tags={data.tags} label="Tagged" />
+
+        {
+          /* A piece written here that was also sent to the newsletter
+             links out to that copy, so a reader can see the discussion
+             there. */
+          !piece.isExternal && piece.substackUrl && (
+            <p class="cross-post">
+              This was also sent to subscribers —{" "}
+              <a href={piece.substackUrl}>read it on Substack</a>.
+            </p>
+          )
+        }
+      </footer>
+    </article>
+
+    <Fragment slot="aside">
+      {
+        /* Every block here is an h2, because the sidebar sits under
+           the article's h1 and headings must not skip a level. */
+        data.tags.length > 0 && (
+          <SideBlock title="Tagged">
+            <TagList tags={data.tags} />
+          </SideBlock>
+        )
+      }
+
+      {
+        related.length > 0 && (
+          <SideBlock title="Related">
+            <ul class="related-list">
+              {related.map((other) => (
+                <li>
+                  <a href={other.url}>{other.title}</a>
+                </li>
+              ))}
+            </ul>
+          </SideBlock>
+        )
+      }
+
+      <SideBlock title="Respond">
+        <p>
+          There are no comments here.
+          {piece.substackUrl
+            ? " Replies on Substack, or by email, both reach me."
+            : " Email reaches me."}
+        </p>
+        <ul>
+          {piece.substackUrl && (
+            <li>
+              <a href={piece.substackUrl}>This piece on Substack</a>
+            </li>
+          )}
+          <li><a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a></li>
+        </ul>
+      </SideBlock>
+
+      {
+        /* A jump link, not a second copy: the full provenance box
+           with its explanation stays in the article footer. */
+        data.datasets.length > 0 && (
+          <SideBlock title="Data behind this piece">
+            <ul class="dataset-list">
+              {data.datasets.map((id) => (
+                <li>
+                  <a href={`/datasets/${id}/`}>{id}</a>
+                </li>
+              ))}
+            </ul>
+          </SideBlock>
+        )
+      }
+    </Fragment>
+  </PageShell>
 </BaseLayout>
 
 <style>
@@ -151,6 +225,22 @@ const canonicalUrl =
     margin: 0;
     font-size: var(--size-sm);
     color: var(--colour-ink-muted);
+  }
+
+  /* A related title can run to two or three lines in a narrow
+     column, so the lines need room to breathe rather than the
+     tighter spacing the sidebar uses for single-line links. */
+  .related-list a {
+    display: block;
+    line-height: var(--leading-body);
+  }
+
+  /* A dataset id is machine-readable text, so it is set in mono —
+     the same signal used for figures and code everywhere else. */
+  .dataset-list a {
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
+    overflow-wrap: anywhere;
   }
 </style>
 
