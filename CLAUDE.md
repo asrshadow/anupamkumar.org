@@ -3,7 +3,7 @@
 Instructions for Claude when working in this repository.
 Read this file completely before making any change.
 
-**Last updated:** 11 September 2026 · **Blueprint version:** v1.2
+**Last updated:** 12 September 2026 · **Blueprint version:** v1.3
 
 ---
 
@@ -25,6 +25,7 @@ Read this file completely before making any change.
 14. Git, for someone who has done it once
 15. How to work with Anupam
 16. Current state
+17. The three routines — publishing, adding a dataset, adding a tool
 
 ---
 
@@ -280,9 +281,11 @@ anupamkumar.org/
 ├── data/                       ← see §6. The largest and longest-lived part.
 │
 ├── src/
+│   ├── assets/                 ← images the build optimises (see §7)
 │   ├── tools/                  ← one folder per tool, fully self-contained
-│   ├── components/             ← shared site pieces (Header, Footer, ToolFrame)
+│   ├── components/             ← shared site pieces (Header, Footer, PageShell)
 │   ├── layouts/                ← page shells
+│   ├── lib/                    ← build-time readers: writing, datasets, tools
 │   ├── pages/                  ← routes
 │   └── styles/
 │       ├── tokens.css          ← ALL colours, fonts, spacing, radii — defined once
@@ -290,10 +293,11 @@ anupamkumar.org/
 │
 ├── scripts/                    ← repo-wide utilities
 │   ├── archive-substack.mjs
-│   ├── build-data-registry.mjs ← scans every dataset.json into data/registry.json
 │   └── check-dataset-freshness.mjs
 │
-├── docs/checklists/            ← the human routines in §13
+├── docs/
+│   ├── checklists/             ← the human routines in §13
+│   └── how-to/                 ← the three routines in §17, for Anupam
 │
 ├── public/
 │   ├── CNAME                   ← contains exactly: anupamkumar.org
@@ -343,13 +347,20 @@ data/
 ├── surveys/             ← unit of observation is a household, person or firm
 ├── sectoral/            ← domain portals, any level of government
 ├── international/       ← multilateral and foreign publishers
-├── derived/             ← anything we computed from the above. See §6.6.
-│
-└── registry.json        ← GENERATED at build time. Never edit by hand.
+└── derived/             ← anything we computed from the above. See §6.6.
 ```
 
 Eight groups, fixed. **Do not add a ninth without a discussion.** If something does not
 obviously fit, it is almost always `derived/`.
+
+**The registry is not a file in this folder.** It is generated on every build from every
+`dataset.json` and served at `https://anupamkumar.org/registry.json`. There is no list to
+maintain and no generated file to keep in step.
+
+Why it is not a committed file: a generated file in Git drifts out of step with its sources
+the first time someone forgets to re-run the script that makes it. An endpoint is built from
+the same reader the site itself uses, so there is one source of truth, and outside consumers
+get a stable address rather than a raw GitHub link.
 
 | Group | Belongs here when | Examples |
 |---|---|---|
@@ -608,8 +619,9 @@ the conclusion in the README. **When unsure whether an aggregate may be publishe
 5. **Files above ~50 MB do not go in Git.** Git keeps every version forever — excellent
    for text, ruinous for large binaries. Large files go to object storage; the
    `dataset.json` points at the URL and stays in Git.
-6. **`registry.json` is generated, never hand-written.** `scripts/build-data-registry.mjs`
-   scans every `dataset.json` at build time. There is no list to maintain.
+6. **The registry is generated, never hand-written.** `src/lib/datasets.ts` scans every
+   `dataset.json` at build time and `src/pages/registry.json.ts` serves the result at
+   `/registry.json`. There is no list to maintain and no file to keep in step.
 7. **Every dataset page shows its `retrieved` date** and a visible staleness banner once
    `stale_after_months` has passed.
 
@@ -651,7 +663,9 @@ Astro's date parsing and the Frictionless conventions.
 | Build scripts | `NN_verb_noun.py` | `01_extract.py`, `02_clean.py` |
 | Python and R scripts | `lowercase_snake_case` | `clean_state_budgets.R` |
 | Astro components | `PascalCase.astro` | `ToolFrame.astro` |
+| Astro endpoints | `lowercase-kebab-case.ts`, named for what they emit | `registry.json.ts` |
 | JavaScript files | `lowercase-kebab-case.js` | `tool.js` |
+| Images in `src/assets/` | `lowercase-kebab-case`, describing content | `profile-photo.webp` |
 | CSS variables | `--lowercase-kebab-case` | `--colour-accent` |
 | Images | `lowercase-kebab-case`, describing content | `devolution-shares-2021.svg` |
 
@@ -752,6 +766,16 @@ that is not one of these.**
   --colour-surface:      #FFFFFF;  /* cards, tables, raised areas */
   --colour-surface-sunk: #F1F1ED;  /* code blocks, inset panels */
 
+  /* --- Chrome — the header and footer band -------------------------------
+     One luminance step away from the page, so the structure of the page is
+     visible without a border doing all the work. Deliberately a near-neutral
+     and not a hue: §8.3 rule 9 forbids large areas of saturated colour, and
+     the header and footer are the largest continuous areas on the site.
+     Separation from --colour-paper is 1.11:1 in light and 1.13:1 in dark —
+     enough to read as a band, not enough to read as a stripe.            */
+  --colour-chrome:      #ECECE5;  /* header and footer background */
+  --colour-chrome-rule: #C9CAC2;  /* the hairline between chrome and page */
+
   /* --- Ink -------------------------------------------------------------- */
   --colour-ink:          #16191C;  /* body text.    16.4:1 on paper — AAA */
   --colour-ink-muted:    #5C6470;  /* captions.      5.6:1 on paper — AA  */
@@ -807,6 +831,8 @@ that is not one of these.**
     --colour-paper:        #14171A;
     --colour-surface:      #1B1F23;
     --colour-surface-sunk: #22272C;
+    --colour-chrome:       #1E2227;
+    --colour-chrome-rule:  #3B424A;
     --colour-ink:          #E9EAE6;   /* 14.9:1 — AAA */
     --colour-ink-muted:    #98A0AB;   /*  6.8:1 — AA  */
     --colour-rule:         #2F353B;
@@ -837,6 +863,38 @@ that is not one of these.**
 /* The explicit toggle must win in both directions — repeat the same block
    under :root[data-theme="dark"]. */
 ```
+
+**`tokens.css` defines colours in three places** — `:root`, the
+`@media (prefers-color-scheme: dark)` block, and the `:root[data-theme="dark"]` block. The
+last two must stay identical to each other, or the explicit toggle stops matching the
+device setting. **Any token added goes in all three.**
+
+#### Contrast on the chrome band — measured, and the constraint it creates
+
+Every foreground the site puts on the header and footer band passes.
+
+| Token on the chrome band | Light — on `#ECECE5` | Dark — on `#1E2227` | Needs |
+|---|---|---|---|
+| `--colour-ink` | 14.87:1 — AAA | 13.23:1 — AAA | 4.5:1 |
+| `--colour-ink-muted` | 5.04:1 — AA | 6.05:1 — AA | 4.5:1 |
+| `--colour-accent` | 6.27:1 — AA | 7.31:1 — AAA | 4.5:1 |
+| `--colour-border-input` | 3.65:1 — passes | 3.24:1 — passes | 3:1 |
+
+`--colour-border-input` is on the band because the header carries a search field. It is the
+tightest of the four, and it is what stops the band being made darker in light mode or
+lighter in dark mode. **If `--colour-chrome` is ever changed, re-check that row first.**
+
+#### Layout widths
+
+These live in `tokens.css` alongside the colours.
+
+```css
+  --width-page:   1120px;  /* the widest the content area ever gets */
+  --width-gutter: var(--space-5);  /* the side margin, never less than this */
+  --width-aside:  18rem;   /* the right-hand column, where a page has one */
+```
+
+`--width-aside` is the only permitted width for a sidebar. See §8.8.
 
 ### 8.3 Colour rules
 
@@ -928,8 +986,8 @@ that is not one of these.**
 
 | Section | Shape language | Why |
 |---|---|---|
-| Header and footer | Full-bleed, hairline rules, no radius, no shadow | Structural. Should recede. |
-| Essay body | No containers at all. Just text on paper. | Nothing should compete with reading. |
+| Header and footer | Full-bleed band in `--colour-chrome`, hairline rule in `--colour-chrome-rule`, no radius, no shadow | Structural. Separated from the page so its edges are legible, but a near-neutral so it still recedes. |
+| Essay body | No containers at all inside the reading column. Just text on paper. | Nothing should compete with reading. A sidebar may sit **beside** the column — see §8.8 — but nothing may sit inside it. |
 | Pull quotes, callouts, banners | Left rail 3px in accent, square corners, `--colour-accent-soft` background | Emphasis without boxing, and without a saturated fill. |
 | Data tables | `--radius-data`, hairline rules, no shadow | A table is a record, not a card. |
 | Charts | `--radius-data` on the plot frame, 4px rounded data-ends on bars | Rounded ends read as finished marks; the frame stays square. |
@@ -952,6 +1010,30 @@ things only — a dropdown, a tooltip, a mobile filter sheet.
 ```
 
 Use `gap` on a flex or grid parent rather than margins on children.
+
+### 8.8 The page shell — one column or two
+
+Every page is either one column or two. A two-column page is a reading column plus a
+right-hand aside of `--width-aside`, and it collapses to one column below 64rem.
+
+**What the aside is for.** Navigation of the material on the page, and nothing else: tags,
+related pieces, links out, the state of a section. It never carries the argument. If
+something in the aside is worth reading properly, it belongs in the main column.
+
+**Rules.**
+
+1. **The aside comes after the main column in the HTML.** A reader using a keyboard or a
+   screen reader meets the content first. Never reorder them with CSS to put the aside
+   first visually — the two orders would then disagree.
+2. **The aside is set in `--font-sans` at `--size-sm` in `--colour-ink-muted`.** It is
+   supporting material and should look like it.
+3. **Running text in the main column stays capped at `--measure`** whether or not there is
+   an aside. A wider column is not an invitation to longer lines.
+4. **The aside may be sticky, but only when it is shorter than the viewport.** Use
+   `position: sticky` with `align-self: start`; never give it its own scrollbar.
+5. **Below 64rem the aside moves below the main column**, in full width, with a rule above
+   it. It is never hidden — hiding it would hide the tags from every phone reader.
+6. **No page has more than one aside**, and no aside has an aside.
 
 ---
 
@@ -1058,6 +1140,26 @@ confirm it succeeds, then restore it.
 
 ## 11. Content rules
 
+### The sections, and what belongs in each
+
+| Nav label | URL | Holds |
+|---|---|---|
+| Home | `/` | The newest piece, then recent writing. Datasets, Tools and subjects in the aside. |
+| Writings and Notes | `/writing/` | Every piece — essays, notes and archived Substack posts — newest first. |
+| Datasets | `/datasets/` | One entry per published dataset. |
+| Tools | `/tools/` | One entry per tool. |
+| About | `/about/` | Who Anupam is, and what the site is for. |
+| — | `/notes/` | Notes only. Reachable from the Writings and Notes aside, not from the nav. |
+| — | `/now/`, `/contact/` | Footer only. |
+| — | `/search/` | The search box in the header submits here. Not a nav word. |
+
+**A nav item may lead to a section with no entries yet**, provided the page says plainly
+what is coming. It may never lead to a 404 or a page that is simply blank.
+
+**`/writing/` is the combined listing and `/notes/` is a filtered view of it.** They are one
+destination to a reader and two URLs on the server, because both were published and rule 8
+says neither may break.
+
 ### Essay frontmatter
 
 ```yaml
@@ -1107,6 +1209,7 @@ Most readers arrive on a mid-range Android phone from a link in WhatsApp.
 | Page type | JavaScript | Total transfer | Largest paint |
 |---|---|---|---|
 | Essay | < 15 KB | < 250 KB | < 1.5 s |
+| Home and section listings | < 15 KB | < 250 KB | < 1.5 s |
 | Dataset page | < 40 KB | < 400 KB | < 2.0 s |
 | Tool page, before interaction | < 60 KB | < 500 KB | < 2.5 s |
 | Tool page, after the user opens the tool | no cap | no cap | on user action only |
@@ -1145,6 +1248,12 @@ a one-person project means they would not get done.
 | `archive-substack.yml` | Daily, and on demand | Tries to fetch the Substack RSS feed. **Does not work — see below.** | Done |
 | `check-links.yml` | Weekly | Finds dead links and reports them. **Government URLs rot constantly** — indiabudget.gov.in reorganises most years. Without this, a two-year-old essay quietly becomes uncitable. | Done |
 | `accessibility-check.yml` | Every push and pull request | Runs `npm run check-a11y`: every page in light, in dark, and at 360px, failing on any violation or sideways scroll. Catches roughly a third of issues; the rest still need the manual list in §9. | Done |
+| `validate-data.yml` | Any push touching `data/` | Checks every `dataset.json` parses, every column it declares exists in the CSV, no file exceeds 50 MB, and every dataset has a README, SOURCES and CHANGELOG. **Note it validates each dataset against its own declaration — not against a global schema.** | Phase 2 |
+| `dataset-freshness.yml` | Monthly | Compares each dataset's `retrieved` date against its `stale_after_months` and opens one issue listing what needs refreshing. | Phase 2 |
+| `lighthouse.yml` | Every pull request | Measures page weight and load time against §12. Performance budgets that are not enforced are decoration. | Phase 3 |
+
+There is no workflow that builds the registry. It is an endpoint served at
+`/registry.json`, generated on every build — see §6.2.
 
 **The Substack archiver does not work from GitHub, and this is expected.** Substack refuses
 requests coming from a data centre and answers 403 whatever headers are sent, tested on
@@ -1158,10 +1267,6 @@ Substack relaxed. Do not replace it with a third-party relay or a reverse-engine
 an issue. Repository Issues are currently switched off, so that step fails harmlessly and
 the report is read from the run summary instead. To switch issues on: `gh repo edit
 --enable-issues`.
-| `validate-data.yml` | Any push touching `data/` | Checks every `dataset.json` parses, every column it declares exists in the CSV, no file exceeds 50 MB, and every dataset has a README, SOURCES and CHANGELOG. **Note it validates each dataset against its own declaration — not against a global schema.** | Phase 2 |
-| `build-data-registry.yml` | Part of `deploy.yml` | Regenerates `data/registry.json` from every `dataset.json`. | Phase 2 |
-| `dataset-freshness.yml` | Monthly | Compares each dataset's `retrieved` date against its `stale_after_months` and opens one issue listing what needs refreshing. | Phase 2 |
-| `lighthouse.yml` | Every pull request | Measures page weight and load time against §12. Performance budgets that are not enforced are decoration. | Phase 3 |
 
 ### Rules for writing workflows here
 
@@ -1337,7 +1442,32 @@ data/**/microdata/
       three tools and no writing is a portfolio of unfinished experiments.
 - [ ] Delete the two placeholder pieces once real writing exists:
       `content/essays/11-09-2026-hello.md` and
-      `content/notes/11-09-2026-what-notes-are-for.md`
+      `content/notes/11-09-2026-what-notes-are-for.md`.
+      **Not before then** — the home page now leads with the newest piece, so deleting
+      them early would feature a Substack post from March 2026 and leave `/notes/` empty.
+
+### Layout and sections — the 12 September 2026 work order
+
+Eleven steps, done one at a time. Tick each as it lands.
+
+- [x] 1 — CLAUDE.md amended to v1.3 for the new layout, navigation and sections
+- [ ] 2 — the header and footer colour band
+- [ ] 3 — `PageShell` and `SideBlock`, the two-column page
+- [ ] 4 — new navigation, search box in the header, `/search/` reads `?q=`
+- [ ] 5 — the home page leads with the newest piece
+- [ ] 6 — Writings and Notes gets a right-hand column
+- [ ] 7 — essays and notes get a right-hand column, and a related-pieces list
+- [ ] 8 — the Datasets and Tools sections, and `/registry.json`
+- [ ] 9 — About, rewritten with a profile and photo
+- [ ] 10 — full check, then publish
+- [ ] 11 — publish a real piece (this is the Phase 1 item above, unchanged)
+
+**Deliberately not built yet**, and both for the same reason — a page designed against zero
+examples fits the first real example badly and sets a precedent by then:
+
+- `/datasets/<id>/` and the endpoint that serves each dataset's files. Build alongside the
+  **first real dataset**.
+- `ToolFrame`, specified in §10. Build alongside the **first real tool**.
 
 ### Verified at the end of Phase 1
 
@@ -1351,6 +1481,231 @@ data/**/microdata/
 
 **Resist building a tool until the writing exists.** Phase 2 is the data layer, Phase 3
 the first two tools. The full roadmap is in the architecture blueprint.
+
+---
+
+## 17. The three routines
+
+What Anupam has to do, from now on, for each of the three things he will do repeatedly.
+The same text is in `docs/how-to/` as three separate files.
+
+### 17.1 Publishing a piece of writing — no code, ever
+
+This already needs no code and will not start needing any.
+
+1. **Make a file** in `content/essays/` for a long piece, or `content/notes/` for a short
+   one. Name it `DD-MM-YYYY-short-slug.md` — the date is for the file list; it does not
+   appear in the web address.
+
+2. **Put the frontmatter at the top**, between two `---` lines:
+
+   ```yaml
+   ---
+   title: "The GST compensation cliff and what states do next"
+   description: "One sentence. This is what shows in search results and in the listing."
+   date: 2026-09-15
+   tags: ["public-finance", "federalism", "gst"]
+   draft: true
+   ---
+   ```
+
+   `date` is ISO — `YYYY-MM-DD` — because software reads it. The filename is DD-MM-YYYY
+   because a person reads it. They are different formats on purpose and both are correct.
+
+3. **Write the piece in Markdown below it.** `##` for a heading, `*word*` for italics,
+   `[text](address)` for a link, a blank line between paragraphs.
+
+4. **Look at it:** `npm run dev`, then open the address it prints. `draft: true` hides it
+   from the built site, so leave it there while writing.
+
+5. **When it is ready:** change `draft: true` to `draft: false`, check every figure against
+   its source, and read it once at phone width.
+
+6. **Publish:**
+
+   ```bash
+   git add .
+   git commit -m "essay: add the GST compensation cliff piece"
+   git push
+   ```
+
+   Then `gh run watch`. A green tick means it is live, usually within two minutes.
+
+7. **If it is also going to Substack:** paste it there afterwards and set Substack's
+   canonical URL field to the address on this site, so the two copies do not compete in
+   search results. Then put the Substack address in the piece's `substackUrl` field here
+   and push again.
+
+   **If it is not going to Substack — which is the normal case — there is nothing to do.**
+   Leave `substackUrl` out entirely. `canonical` already defaults to `"self"`, which tells
+   search engines this site is the original. A piece published only here is the default
+   shape of a piece, not a special case, and nothing on the page will mention Substack.
+
+**The only fields worth remembering** are `title`, `description`, `date`, `tags` and
+`draft`. Everything else has a sensible default. The full list is in §11.
+
+**If you get a field wrong, the build stops and names the file.** That is the content
+schema in `src/content.config.ts` doing its job. A red cross is not a disaster; read what
+it says.
+
+#### Images, charts and links inside a piece
+
+**Links** are plain Markdown: `[the Fifteenth Finance Commission report](https://…)`.
+§9 asks for link text that means something on its own — never "click here", never a bare
+URL, because a screen reader user often navigates by jumping between links and hears only
+the link text.
+
+**Images and charts live in a folder beside the piece, named after the piece.**
+
+```
+content/essays/
+├── 15-09-2026-gst-compensation-cliff.md
+└── 15-09-2026-gst-compensation-cliff/
+    ├── committed-expenditure-share.svg
+    └── collections-by-state.png
+```
+
+Reference them with a relative path:
+
+```markdown
+![Committed expenditure rose from 38% to 52% of revenue receipts between 2015 and 2025.](./15-09-2026-gst-compensation-cliff/committed-expenditure-share.svg)
+```
+
+Astro sees the relative path, runs the file through the same optimiser the profile photo
+uses, and writes the width and height into the page. **An image referenced this way costs
+nothing to maintain and needs no code.** An image dropped in `public/` and linked as
+`/something.png` skips all of that and ships at full size — do not do it.
+
+**This was tested on 12 September 2026 and works**, despite the content collections having
+their `base` outside `src/`. A PNG referenced this way was converted to WebP automatically,
+both files were emitted with a content hash, and both `<img>` tags carried a `width` and a
+`height` — which is what stops the page jumping about as it loads. Nothing had to be
+configured.
+
+**The alt text states the finding, not the format.** This is §9 and it is the rule most
+often got wrong. "Committed expenditure rose from 38% to 52% of revenue receipts between
+2015 and 2025" is alt text. "Bar chart of expenditure" is not — it tells a reader who
+cannot see the chart nothing they did not already know from the sentence above it.
+
+**Charts: export from Python or R as SVG where you can.** An SVG stays sharp at any zoom,
+is usually smaller than a PNG of the same chart, and its text is real text. Use PNG only
+for something genuinely photographic. Use the `--chart-*` colours from §8.2 in the same
+fixed order, never the accent green: §8.3 rule 2 keeps the chart palette and the site
+palette apart.
+
+**One thing about charts and the dark theme, decided now so it does not get decided
+accidentally.** A chart exported from matplotlib or ggplot carries its own background. On
+the dark theme a white-backed chart becomes a bright panel in the middle of a dark page.
+The rule for now: **export charts on `--chart-surface` white, and treat the figure as a
+printed plate** — a light rectangle with `--radius-data`, the same in both themes. It is
+honest, it is what most data publications do, and it needs no machinery.
+
+The better answer, when there are enough charts to justify it, is to export each chart
+twice and swap them with `prefers-color-scheme` in a small `<Figure>` component. That is
+worth building at roughly the fifth chart, not the first.
+
+**A chart with two or more series needs a legend, and four or fewer also need labels
+directly on the marks** — §8.3 rule 4. If the chart is interactive rather than a picture,
+it is not a chart in an essay any more; it is a tool, and §17.3 applies.
+
+### 17.2 Adding a dataset — no code, once the detail page exists
+
+Today this needs one build session: `/datasets/<id>/` and the download endpoint do not
+exist yet, and are deliberately being built alongside the first real dataset rather than
+against none. **After that session, it is folders and files and no code at all.**
+
+1. **Decide where it goes.** §6.2: one of the eight fixed groups, by *jurisdiction*, never
+   by topic. Topic goes in `keywords`, where one dataset can carry several and they can
+   change without moving a file.
+
+2. **Make the folder**, `data/<group>/<publisher-or-subject-slug>/`, no year in the name.
+
+3. **Download the source files into `raw/` and write `SOURCES.md` before doing anything
+   else.** Every file: where it came from, the direct URL, and the date. Do this first,
+   while the browser tab is still open — reconstructing a URL three months later is the
+   single most reliably painful thing in this whole workflow, and government portals
+   reorganise constantly.
+
+4. **Decide what shape this dataset actually is** — §6.3. Most are a tiny series or a
+   medium table and need one CSV and nothing else. **Do not build a `build/` folder, a
+   `METHOD.md` or a script for a dataset that did not need cleaning.** Structure that
+   exists to look consistent teaches the next dataset to be more complicated than it is.
+
+5. **Put the clean CSV in `clean/`.** UTF-8, one header row, nothing above it, no merged
+   cells, no blank rows. Column names in `lowercase_snake_case` with the unit in the name
+   or in its description.
+
+6. **Write `dataset.json`.** Copy the nearest example from `data/_templates/`. Fill in the
+   administrative fields — id, title, description, keywords, sources, licenses, updated,
+   stale_after_months — and then describe every column the file actually has, in that
+   dataset's own words, with its unit. Nothing prescribes what the columns must be.
+
+   **Every column in the file must appear here, and every one must state its unit.** A
+   column whose unit a reader has to guess is how a public finance dataset gets misused.
+
+7. **Write `README.md` and `CHANGELOG.md`.** Plain English. If nothing was cleaned, the
+   README says so: "no cleaning was needed; this is the source file with only the header
+   row tidied" is a complete answer.
+
+8. **Push.** The dataset appears at `/datasets/` and gets its own page, its download link
+   and its entry in `/registry.json` automatically. **There is no list to update anywhere.**
+
+**What can go wrong, and what it looks like:** if `dataset.json` has a typo the build stops
+and names the file. If a column listed in `dataset.json` is not in the CSV, the
+`validate-data.yml` workflow fails and says which column. Both are meant to happen and both
+say what to fix.
+
+### 17.3 Adding a dashboard or tool — this one needs code
+
+There is no way round this and it is worth being straight about it. A dashboard is a
+program: it reads data, watches filters, and redraws a chart. Writing and datasets are
+content and can be pure content. A tool cannot be.
+
+**What is true, though, is that a tool here is small and self-contained**, and the site's
+architecture means you are never editing the site to add one.
+
+1. **The dataset comes first.** Publish the data as a dataset by §17.2 before building
+   anything that reads it. A tool with data that exists only inside it is not citable and
+   not checkable.
+
+2. **One folder, `src/tools/<tool-id>/`**, holding everything the tool needs. §10.
+
+3. **`tool.config.js`** describes it to the rest of the site — id, title, summary, which
+   datasets it uses, which engine, minimum viewport, status, updated. The tools index, the
+   tags and the sitemap are all generated from these files. **There is no list to maintain.**
+
+4. **`tool.js`** is the tool itself, following the five-step pattern in §4.4: load the data
+   once, read the filters, keep the rows those filters select, hand them to Observable
+   Plot, repeat when a filter changes. No React, no Vue. §4.4 explains why, and the short
+   version is that a dashboard with a few filters and a few charts is a readable script,
+   and a framework would add a build step and 45 KB in exchange for nothing.
+
+5. **Only the libraries in §4.3.** Observable Plot for charts, Arquero for reshaping.
+   DuckDB-WASM only when a dataset is genuinely too big for Arquero — several megabytes is
+   a real cost to a reader on a phone.
+
+6. **`README.md`** beside it, per §4.5, written for Anupam in two years having forgotten
+   everything.
+
+7. **Before committing, delete the folder and run `npm run build`.** It must still succeed.
+   That is the one-way import rule (rule 5) and it is what keeps any tool deletable.
+
+**What Anupam can realistically do himself**, given Python at beginner level and no
+JavaScript:
+
+- Decide what the tool should show and which filters it needs. This is the part that
+  actually determines whether the tool is any good, and it is entirely his.
+- Prepare the data — clean it in Python, publish it as a dataset.
+- Read `tool.config.js` and change the title, summary or status.
+- Read the comments in `tool.js` and follow what it is doing.
+
+**What needs Claude Code:** writing `tool.js`, and changing what the tool does. Ask for
+changes in terms of behaviour — "add a filter for year", "show states as small multiples
+instead of one crowded chart" — rather than in terms of code. Expect the comments to
+explain the result back.
+
+**A rule worth keeping:** if a tool starts needing React, the tool is too complicated.
+Simplify the tool. §4.4.
 
 ---
 
