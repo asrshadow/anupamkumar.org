@@ -1448,34 +1448,40 @@ data/**/microdata/
 
 ### Layout and sections — the 12 September 2026 work order
 
-Eleven steps, done one at a time. Tick each as it lands.
+Steps 1 to 10 done and published on 12 September 2026.
 
 - [x] 1 — CLAUDE.md amended to v1.3 for the new layout, navigation and sections
-- [ ] 2 — the header and footer colour band
-- [ ] 3 — `PageShell` and `SideBlock`, the two-column page
-- [ ] 4 — new navigation, search box in the header, `/search/` reads `?q=`
-- [ ] 5 — the home page leads with the newest piece
-- [ ] 6 — Writings and Notes gets a right-hand column
-- [ ] 7 — essays and notes get a right-hand column, and a related-pieces list
-- [ ] 8 — the Datasets and Tools sections, and `/registry.json`
-- [ ] 9 — About, rewritten with a profile and photo
-- [ ] 10 — full check, then publish
-- [ ] 11 — publish a real piece (this is the Phase 1 item above, unchanged)
+- [x] 2 — the header and footer colour band
+- [x] 3 — `PageShell` and `SideBlock`, the two-column page
+- [x] 4 — new navigation, search box in the header, `/search/` reads `?q=`
+- [x] 5 — the home page leads with the newest piece
+- [x] 6 — Writings and Notes gets a right-hand column
+- [x] 7 — essays and notes get a right-hand column, and a related-pieces list
+- [x] 8 — the Datasets and Tools sections, and `/registry.json`
+- [x] 9 — About, rewritten with a profile and photo
+- [x] 10 — full check, then publish
+- [ ] 11 — **publish a real piece.** Not a build task. See the Phase 1 item above.
 
 **Deliberately not built yet**, and both for the same reason — a page designed against zero
 examples fits the first real example badly and sets a precedent by then:
 
 - `/datasets/<id>/` and the endpoint that serves each dataset's files. Build alongside the
-  **first real dataset**.
+  **first real dataset**. `src/lib/datasets.ts` and `/registry.json` already exist and are
+  tested, so that session is the detail page and the download endpoint only.
 - `ToolFrame`, specified in §10. Build alongside the **first real tool**.
 
-### Verified at the end of Phase 1
+### Verified on 12 September 2026, on the published site
 
-- Zero accessibility violations across all ten pages, checked with Axe against
-  WCAG 2.0, 2.1 and 2.2 at level AA
-- No sideways scrolling on any page at 360px or 320px wide, in both themes
-- Deleting `src/tools/` still builds, so the one-way import rule holds before the first
-  tool exists
+- Zero accessibility violations across all 16 pages, each checked in the light theme, the
+  dark theme and at 360px, against WCAG 2.0, 2.1 and 2.2 at level AA
+- No sideways scrolling at 320px, 360px, 640px (which is 200% zoom) or 1280px, in both
+  themes, on every page
+- Every control reachable by keyboard in document order, with a visible focus ring
+- Search from the header works from any page, and the search page explains itself with
+  JavaScript switched off
+- Zero dead internal links across the whole built site
+- Deleting `src/tools/` still builds and `/tools/` still shows its empty state, so the
+  one-way import rule holds before the first tool exists
 - An essay page ships no JavaScript beyond two small inline scripts, and about 100 KB of
   fonts, against a budget of 250 KB total
 
