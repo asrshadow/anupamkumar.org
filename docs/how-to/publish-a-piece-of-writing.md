@@ -119,6 +119,32 @@ loads. **This costs nothing to maintain and needs no code.**
 An image dropped into `public/` and linked as `/something.png` skips all of that and ships
 at full size. Do not do it.
 
+**Resize a photograph to about 1280 pixels wide before you commit it.** That is enough for
+a high-density screen at the width the text column actually is. Anything bigger sits in the
+repository forever for no visible gain — the build makes every smaller copy it needs from
+that one file.
+
+### The first image becomes the thumbnail
+
+**You do not have to do anything for this.** The first image in a piece is used
+automatically as its thumbnail: large at the top of the home page when the piece is the
+newest one, and small beside the title in every listing.
+
+**If you want a different thumbnail, put a different image first.** That is the whole
+control, and it is deliberate — a frontmatter field naming the thumbnail is a field that
+gets forgotten, and then half the listing has pictures and half does not for no reason a
+reader can see.
+
+The picture is cropped to fit a fixed shape so that a column of entries lines up neatly
+down the page. A tall portrait will therefore show its middle. If that matters for a
+particular image, put a wider one first.
+
+**A piece with no image just has no thumbnail** and takes the full width. Nothing is drawn
+in its place.
+
+**A piece archived from Substack gets no thumbnail**, because its pictures are stored on
+Substack rather than here, and the site does not draw on their servers to look right.
+
 ### The alt text states the finding, not the format
 
 This is the rule most often got wrong, and it matters more than it looks.

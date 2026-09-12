@@ -10,6 +10,30 @@
 // ============================================================
 
 import { getCollection, type CollectionEntry } from "astro:content";
+import type { ImageMetadata } from "astro";
+
+// ============================================================
+// EVERY IMAGE THAT SITS BESIDE A PIECE
+//
+// Listing pages show a small thumbnail of a piece's first image.
+// To let the build resize that image, it needs the image itself
+// rather than the path written in the Markdown — so every image
+// under content/ is loaded here, once, and looked up by path.
+//
+// eager: true means these are read while the site is being built.
+// Nothing here is sent to a reader; the pages are plain HTML by
+// the time anyone sees them.
+//
+// Only LOCAL images are covered, which is deliberate. An archived
+// Substack piece points at Substack's own servers, and a
+// thumbnail drawn from there would put the site's appearance back
+// in the hands of a company it is designed not to depend on. Such
+// a piece simply shows no thumbnail.
+// ============================================================
+const localImages = import.meta.glob<{ default: ImageMetadata }>(
+  "../../content/**/*.{jpeg,jpg,png,gif,webp,avif}",
+  { eager: true },
+);
 
 // A piece of writing can come from any of the three collections.
 export type WritingEntry =
@@ -33,6 +57,12 @@ export interface Piece {
   isExternal: boolean;
   /** The Substack address, for pieces that have one. */
   substackUrl: string;
+  /**
+   * The piece's first image, for the thumbnail on listing pages.
+   * Undefined when the piece has no image, or when its only images
+   * are hosted somewhere else. See the note at the top of this file.
+   */
+  thumbnail?: ImageMetadata;
 }
 
 // ============================================================
@@ -51,6 +81,45 @@ export function urlFor(kind: Piece["kind"], slug: string): string {
 // STEP 2 — Turn a raw collection entry into a Piece
 // ============================================================
 
+// ============================================================
+// The first image in a piece, for its thumbnail
+//
+// NOTHING HAS TO BE WRITTEN IN THE FRONTMATTER FOR THIS. The
+// first image in the piece becomes its thumbnail. Put a different
+// image first and the thumbnail changes with it.
+//
+// Why the first one and not a chosen one: a field naming the
+// thumbnail is a field that gets forgotten, and then half the
+// listing has pictures and half does not for no reason a reader
+// can see.
+// ============================================================
+
+function findFirstImage(entry: WritingEntry): ImageMetadata | undefined {
+  const body = entry.body ?? "";
+  // The first Markdown image in the piece: ![alt](path)
+  const match = body.match(/!\[[^\]]*\]\(([^)\s]+)/);
+  if (!match) return undefined;
+
+  const reference = match[1];
+
+  // An image hosted elsewhere cannot be resized by the build, and
+  // depending on somebody else's server for the site's appearance
+  // is exactly what this site avoids. Skip it.
+  if (/^https?:\/\//.test(reference)) return undefined;
+
+  // Markdown writes "./the-piece-folder/picture.jpg". The loaded
+  // images are keyed by their full path, so match on the end of it.
+  // That works whichever collection the piece is in, without this
+  // function having to know.
+  const tail = reference.replace(/^\.\//, "");
+
+  for (const [path, module] of Object.entries(localImages)) {
+    if (path.endsWith("/" + tail)) return module.default;
+  }
+
+  return undefined;
+}
+
 function toPiece(entry: WritingEntry, kind: Piece["kind"]): Piece {
   return {
     entry,
@@ -64,6 +133,7 @@ function toPiece(entry: WritingEntry, kind: Piece["kind"]): Piece {
     tags: entry.data.tags,
     isExternal: kind === "external",
     substackUrl: entry.data.substackUrl ?? "",
+    thumbnail: findFirstImage(entry),
   };
 }
 

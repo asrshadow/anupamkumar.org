@@ -1488,12 +1488,17 @@ examples fits the first real example badly and sets a precedent by then:
 An essay page ships **no JavaScript at all** beyond two small inline scripts. Weight is
 almost entirely fonts, and a photograph where a piece has one.
 
-| Page | Total | Fonts | Image | Budget |
-|---|---|---|---|---|
-| Essay with a photograph | 224 KB | 103 KB | 71 KB | < 250 KB |
-| Essay without one | 186 KB | 134 KB | — | < 250 KB |
-| Home | 170 KB | 119 KB | — | < 250 KB |
-| Writings and Notes | 148 KB | 99 KB | — | < 250 KB |
+Measured cold, one page per fresh browser, so nothing is hidden by a warm cache.
+
+| Page | Total | Images | Budget |
+|---|---|---|---|
+| Essay with a photograph | 223 KB | 69 KB | < 250 KB |
+| Essay without one | 187 KB | — | < 250 KB |
+| Home, with a featured image and thumbnails | 200 KB | 28 KB | < 250 KB |
+| Writings and Notes, with thumbnails | 158 KB | 7 KB | < 250 KB |
+
+The rest is almost entirely fonts. **Measure cold.** A second page in the same browser
+reuses the fonts and reports a figure a first-time reader will never see.
 
 > **A font trap that cost 100 KB a page, recorded so it is not repeated.** Importing
 > `@fontsource/<family>/latin-400.css` alongside `latin-ext-400.css` looks leaner than the
@@ -1615,6 +1620,41 @@ their `base` outside `src/`. A PNG referenced this way was converted to WebP aut
 both files were emitted with a content hash, and both `<img>` tags carried a `width` and a
 `height` — which is what stops the page jumping about as it loads. Nothing had to be
 configured.
+
+#### The first image becomes the piece's thumbnail
+
+**Nothing has to be written in the frontmatter for this.** The first image in a piece is
+used automatically as its thumbnail on the home page and on every listing, beside the title
+and the summary. Put a different image first and the thumbnail changes with it.
+
+| Where | Size | Shape |
+|---|---|---|
+| Featured piece, top of the home page | 640px wide | 21:9, a wide shallow crop so the title still fits on the first screen |
+| A listing entry, wide screen | 120px wide, beside the text | 4:3 |
+| A listing entry, phone | full width, above the text | 16:9 |
+
+The picture is cropped to fill those shapes, so a row of entries lines up down the page
+whatever shape each source image happens to be.
+
+**A piece with no image simply has no thumbnail**, and its entry spans the full width. No
+placeholder is drawn. An empty grey box promises a picture that does not exist, and this
+site does not draw skeletons for things that are not there.
+
+**An archived Substack piece gets no thumbnail either**, because its images live on
+Substack's own servers. Drawing the site's appearance from there would put it back in the
+hands of a company the architecture is designed not to depend on. If that becomes worth
+changing, the fix is for `scripts/archive-substack.mjs` to download the images into the
+repository, not for the pages to link out to them.
+
+**The thumbnail carries `alt=""`, deliberately.** It is decorative in a listing: the title
+sits beside it and says where the link goes, so describing the picture again would make a
+screen reader read the same entry twice. The real alt text stays on the image inside the
+piece, where it does the work. This is the one place on the site where an empty `alt` is
+correct.
+
+**Resize a photograph to about 1280px before committing it.** That covers a high-density
+screen at the 612px reading column. Anything larger sits in Git history forever for no
+visible gain. The build makes every smaller copy it needs from that one file.
 
 **The alt text states the finding, not the format.** This is §9 and it is the rule most
 often got wrong. "Committed expenditure rose from 38% to 52% of revenue receipts between

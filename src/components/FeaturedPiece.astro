@@ -14,6 +14,7 @@
 
 import type { Piece } from "../lib/writing";
 import { excerptOf } from "../lib/writing";
+import { Image } from "astro:assets";
 import PostMeta from "./PostMeta.astro";
 import TagList from "./TagList.astro";
 
@@ -38,6 +39,29 @@ const summary = excerptOf(piece, 40) || piece.description;
 ---
 
 <article class="featured">
+  {
+    /* Larger than the thumbnail on a listing entry, because this is
+       the featured piece, but still a long way short of the full
+       picture inside the article. alt="" for the same reason as on
+       a listing entry: the title beside it says where the link
+       goes, and the picture's real description lives on the copy
+       inside the piece.
+
+       loading="eager" because this sits at the top of the home
+       page. Lazy-loading something already on screen only delays
+       it. */
+    piece.thumbnail && (
+      <a
+        href={piece.url}
+        class="featured-image"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <Image src={piece.thumbnail} alt="" width={640} loading="eager" />
+      </a>
+    )
+  }
+
   <h2 class="featured-title">
     <a href={piece.url}>{piece.title}</a>
   </h2>
@@ -63,6 +87,25 @@ const summary = excerptOf(piece, 40) || piece.description;
     padding-bottom: var(--space-7);
     border-bottom: 1px solid var(--colour-rule);
     margin-bottom: var(--space-7);
+  }
+
+  /* A wide, shallow crop rather than the picture's own shape. It
+     sits above a title and a standfirst, and a tall image would
+     push both of those off the first screen. */
+  .featured-image {
+    display: block;
+    aspect-ratio: 21 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-data);
+    background: var(--colour-surface-sunk);
+    max-width: var(--measure);
+  }
+
+  .featured-image :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .featured-title {

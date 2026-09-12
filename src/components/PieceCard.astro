@@ -10,6 +10,8 @@
 // ============================================================
 
 import type { Piece } from "../lib/writing";
+import { excerptOf } from "../lib/writing";
+import { Image } from "astro:assets";
 import PostMeta from "./PostMeta.astro";
 import TagList from "./TagList.astro";
 
@@ -40,23 +42,56 @@ const { piece, showTags = true, headingLevel = 3 } = Astro.props;
 // Astro treats a lowercase name as a literal HTML tag and a
 // capitalised one as a value to look up.
 const Heading = `h${headingLevel}` as "h2" | "h3";
+
+// About forty words drawn from the opening of the piece, the same
+// as the featured piece at the top of the home page uses.
+//
+// Not the one-sentence "description": that is also the
+// search-engine snippet, which gets cut off at roughly 155
+// characters, so making it long enough to be useful here would
+// spoil it there. Falls back to the description for a piece with
+// no usable opening paragraph.
+const summary = excerptOf(piece, 40) || piece.description;
+
+// The piece's first image, if it has one. Nothing has to be
+// written in the frontmatter — see findFirstImage in lib/writing.
+const thumbnail = piece.thumbnail;
 ---
 
-<article class="piece-card">
-  <Heading class="piece-title">
-    <a href={piece.url}>{piece.title}</a>
-  </Heading>
+<article class:list={["piece-card", { "has-thumbnail": thumbnail }]}>
+  {
+    /* THE THUMBNAIL CARRIES alt="" ON PURPOSE, and that is not an
+       oversight. It is decorative here: the title sits beside it and
+       says where the link goes, so describing the picture as well
+       would make a screen reader read the same entry twice. The real
+       alt text stays on the image inside the piece, where it does
+       actual work.
 
-  <PostMeta
-    date={piece.date}
-    updated={piece.updated}
-    isExternal={piece.isExternal}
-    substackUrl={piece.substackUrl}
-  />
+       aria-hidden and tabindex="-1" keep this second link to the
+       same place out of the keyboard path, for the same reason. */
+    thumbnail && (
+      <a href={piece.url} class="piece-thumbnail" tabindex="-1" aria-hidden="true">
+        <Image src={thumbnail} alt="" width={240} loading="lazy" />
+      </a>
+    )
+  }
 
-  <p class="piece-description">{piece.description}</p>
+  <div class="piece-body">
+    <Heading class="piece-title">
+      <a href={piece.url}>{piece.title}</a>
+    </Heading>
 
-  {showTags && <TagList tags={piece.tags} />}
+    <PostMeta
+      date={piece.date}
+      updated={piece.updated}
+      isExternal={piece.isExternal}
+      substackUrl={piece.substackUrl}
+    />
+
+    <p class="piece-description">{summary}</p>
+
+    {showTags && <TagList tags={piece.tags} />}
+  </div>
 </article>
 
 <style>
@@ -64,9 +99,58 @@ const Heading = `h${headingLevel}` as "h2" | "h3";
     padding-block: var(--space-5);
     border-bottom: 1px solid var(--colour-rule);
 
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  /* Thumbnail on the left, everything else on the right. The
+     picture column is a fixed width so a column of entries lines
+     up down the page whatever shape each image happens to be. */
+  .piece-card.has-thumbnail {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  /* On a phone the thumbnail sits above the title at full width.
+     A 120px picture beside text on a 360px screen leaves the words
+     in a ribbon too narrow to read.
+
+     It also gets a shallower crop there. At full width a 4:3
+     picture is nearly 300px tall, so two entries would fill the
+     screen and the list would stop being a list. */
+  @media (max-width: 34rem) {
+    .piece-card.has-thumbnail {
+      grid-template-columns: 1fr;
+    }
+
+    .piece-thumbnail {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  .piece-body {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    min-width: 0;
+  }
+
+  /* A fixed box with the picture cropped to fill it. Images come
+     in whatever shape the source gave them, and a row of different
+     shapes reads as untidy rather than varied. */
+  .piece-thumbnail {
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-data);
+    background: var(--colour-surface-sunk);
+  }
+
+  .piece-thumbnail :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   /* The last item in a list should not leave a rule hanging under
