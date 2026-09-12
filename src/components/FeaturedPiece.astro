@@ -1,0 +1,89 @@
+---
+// ============================================================
+// FEATURED PIECE
+// The newest thing written, shown at the top of the home page.
+//
+// It is the same information as a PieceCard, set larger, because
+// it is the first and most important thing on the page.
+//
+// IT IS NOT A CARD. No border, no background, no shadow. A box
+// around it would make it look like one item in a set, which is
+// the opposite of what being featured means. The size does the
+// work instead.
+// ============================================================
+
+import type { Piece } from "../lib/writing";
+import PostMeta from "./PostMeta.astro";
+import TagList from "./TagList.astro";
+
+interface Props {
+  piece: Piece;
+}
+
+const { piece } = Astro.props;
+---
+
+<article class="featured">
+  <h2 class="featured-title">
+    <a href={piece.url}>{piece.title}</a>
+  </h2>
+
+  <p class="featured-standfirst">{piece.description}</p>
+
+  <PostMeta
+    date={piece.date}
+    updated={piece.updated}
+    isExternal={piece.isExternal}
+    substackUrl={piece.substackUrl}
+  />
+
+  <TagList tags={piece.tags} />
+</article>
+
+<style>
+  .featured {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    padding-bottom: var(--space-7);
+    border-bottom: 1px solid var(--colour-rule);
+    margin-bottom: var(--space-7);
+  }
+
+  .featured-title {
+    /* One step below the page's own h1, and well above anything
+       else on the page. */
+    font-family: var(--font-serif);
+    font-size: var(--size-2xl);
+    font-weight: 700;
+    line-height: var(--leading-tight);
+    margin: 0;
+    text-wrap: balance;
+    max-width: var(--measure);
+  }
+
+  .featured-title a {
+    color: var(--colour-ink);
+    text-decoration: none;
+  }
+
+  .featured-title a:hover {
+    color: var(--colour-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* The one-sentence description, set as a standfirst: serif and
+     larger than body text, so it reads as an introduction to the
+     piece rather than as the start of it. */
+  .featured-standfirst {
+    font-family: var(--font-serif);
+    font-size: var(--size-lg);
+    line-height: 1.45;
+    color: var(--colour-ink-muted);
+    margin: 0;
+    max-width: var(--measure);
+    text-wrap: pretty;
+  }
+</style>

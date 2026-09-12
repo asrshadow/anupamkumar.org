@@ -70,4 +70,12 @@ const Heading = `h${headingLevel}` as "h2" | "h3";
   .side-block :global(p) {
     margin: 0 0 var(--space-3);
   }
+
+  /* The last paragraph in a block carries no bottom margin. The gap
+     between blocks is set once by the sidebar itself, and a trailing
+     margin here would add to it unevenly depending on whether a
+     block happened to end in a paragraph or a list. */
+  .side-block :global(p:last-child) {
+    margin-bottom: 0;
+  }
 </style>

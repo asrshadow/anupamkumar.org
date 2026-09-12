@@ -1,121 +1,168 @@
 ---
 // ============================================================
 // HOME PAGE
-// Who this is, what the site is for, and the most recent pieces.
 //
-// Data and Tools are described as coming rather than linked,
-// because a link to an empty page is worse than no link.
+// Leads with the newest thing written. That is the whole point of
+// the page: a reader arriving for the first time should meet the
+// writing, not a biography. The biography lives at /about/.
+//
+// Two columns. The reading matter is on the left, and the right
+// column carries the things a reader might go to next — the other
+// sections, the subjects, and where else to find this.
 // ============================================================
 
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PageShell from "../components/PageShell.astro";
+import SideBlock from "../components/SideBlock.astro";
+import FeaturedPiece from "../components/FeaturedPiece.astro";
 import PieceCard from "../components/PieceCard.astro";
-import { getAllWriting } from "../lib/writing";
+import { getAllWriting, getAllTags } from "../lib/writing";
 
-const recent = (await getAllWriting()).slice(0, 5);
+const everything = await getAllWriting();
+
+// The newest piece gets the top of the page to itself.
+const featured = everything[0];
+
+// The next four go underneath it, in the ordinary listing style.
+const alsoRecent = everything.slice(1, 5);
+
+// The subjects, for the sidebar. EIGHT, not all of them: this list
+// will be forty entries long in two years, and a sidebar cannot
+// hold forty. The full list is on /writing/.
+const topTags = (await getAllTags()).slice(0, 8);
+
+function displayTag(tag: string): string {
+  const spaced = tag.replace(/-/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 ---
 
 <BaseLayout
   title="Anupam Kumar"
-  description="Writing, cleaned datasets and small tools on public finance, public policy, economics and geoeconomics — with the aim of making economic information usable by people who are not economists."
+  description="Writing, data and tools on public finance, public policy, economics and geoeconomics — with the aim of making economic information usable by people who are not economists."
 >
-  <section class="intro">
-    <h1>Anupam Kumar</h1>
+  <PageShell asideLabel="Elsewhere on this site">
+    <!-- Every page needs exactly one h1, and it has to be the
+         identity of the page rather than the title of one article —
+         otherwise the newest essay's title would be read as the
+         name of the whole site.
 
-    <p class="lede">
-      I write about public finance, public policy, economics and geoeconomics.
-      The aim of this site is narrow and deliberate: to make economic
-      information usable by people who are not economists.
-    </p>
-
-    <p class="lede-secondary">
-      Alongside the writing, it will hold cleaned public finance datasets with
-      their sources and methods documented, and small tools that run entirely in
-      your browser.
-    </p>
-  </section>
-
-  <section class="recent" aria-labelledby="recent-heading">
-    <h2 id="recent-heading" class="section-heading section-heading--ruled">Recent writing</h2>
+         Set at --size-xl and not --size-3xl on purpose: the
+         featured piece below it should be the largest thing here. -->
+    <header class="identity">
+      <h1>Anupam Kumar</h1>
+      <p>
+        Writing, data and tools on public finance, public policy, economics and
+        geoeconomics.
+      </p>
+    </header>
 
     {
-      recent.length > 0 ? (
-        <div class="piece-list">
-          {recent.map((piece) => (
-            <PieceCard piece={piece} />
-          ))}
-        </div>
+      featured ? (
+        <>
+          <section aria-labelledby="latest-heading">
+            <h2 id="latest-heading" class="visually-hidden">
+              The most recent piece
+            </h2>
+            <FeaturedPiece piece={featured} />
+          </section>
+
+          {alsoRecent.length > 0 && (
+            <section aria-labelledby="more-heading">
+              <h2 id="more-heading" class="section-heading section-heading--ruled">
+                More recent writing
+              </h2>
+
+              <div class="piece-list">
+                {alsoRecent.map((piece) => (
+                  <PieceCard piece={piece} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <p class="see-all">
+            <a href="/writing/">All writings and notes</a>
+          </p>
+        </>
       ) : (
         <p class="empty">Nothing published yet. The first pieces are coming.</p>
       )
     }
 
-    {
-      recent.length > 0 && (
-        <p class="see-all">
-          <a href="/writing/">All writing</a>
-        </p>
-      )
-    }
-  </section>
-
-  <section class="coming" aria-labelledby="coming-heading">
-    <h2 id="coming-heading" class="section-heading section-heading--ruled">What is coming</h2>
-
-    <div class="coming-grid">
-      <div class="coming-item">
-        <h3>Datasets</h3>
+    <Fragment slot="aside">
+      <SideBlock title="Datasets">
         <p>
           Cleaned Indian public finance data, each one carrying its source, the
-          date it was retrieved, a description of every column with its unit, and
-          a build script that regenerates it from the original files. Documented
-          well enough to cite in a paper.
+          date it was retrieved, and every column described with its unit.
         </p>
-      </div>
-
-      <div class="coming-item">
-        <h3>Tools</h3>
         <p>
-          Small interactive things that run entirely in your browser. Nothing you
-          open or upload is sent anywhere, because there is no server to send it
-          to.
+          <a href="/datasets/">Nothing published yet — what is coming</a>
         </p>
-      </div>
-    </div>
-  </section>
+      </SideBlock>
+
+      <SideBlock title="Tools">
+        <p>
+          Small interactive things that run entirely in your browser. Nothing
+          you open is sent anywhere, because there is no server to send it to.
+        </p>
+        <p>
+          <a href="/tools/">Nothing published yet — what is coming</a>
+        </p>
+      </SideBlock>
+
+      {
+        topTags.length > 0 && (
+          <SideBlock title="Browse by subject">
+            <ul class="tag-links">
+              {topTags.map(({ tag, count }) => (
+                <li>
+                  <a href={`/tags/${tag}/`}>
+                    {displayTag(tag)}
+                    <span class="count">{count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p class="more-subjects">
+              <a href="/writing/">All subjects</a>
+            </p>
+          </SideBlock>
+        )
+      }
+
+      <SideBlock title="Elsewhere">
+        <ul>
+          <li><a href="https://asranupam.substack.com">Newsletter on Substack</a></li>
+          <li><a href="/rss.xml">RSS feed</a></li>
+          <li><a href="mailto:hello@anupamkumar.org">hello@anupamkumar.org</a></li>
+        </ul>
+      </SideBlock>
+    </Fragment>
+  </PageShell>
 </BaseLayout>
 
 <style>
-  .intro {
+  .identity {
     max-width: var(--measure);
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-7);
   }
 
-  .intro h1 {
-    /* The largest size on the scale, used on this page only. */
-    font-size: var(--size-3xl);
-    margin-bottom: var(--space-5);
+  .identity h1 {
+    font-size: var(--size-xl);
+    margin: 0 0 var(--space-2);
   }
 
-  .lede {
-    font-family: var(--font-serif);
-    font-size: var(--size-lg);
-    line-height: 1.5;
-    margin: 0 0 var(--space-4);
-    text-wrap: pretty;
-  }
-
-  .lede-secondary {
-    font-family: var(--font-serif);
-    font-size: var(--size-md);
-    line-height: var(--leading-body);
-    color: var(--colour-ink-muted);
+  .identity p {
     margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
     text-wrap: pretty;
   }
 
-  .recent,
-  .coming {
-    margin-bottom: var(--space-8);
+  .see-all {
+    margin: var(--space-6) 0 0;
+    font-size: var(--size-sm);
   }
 
   .empty {
@@ -123,28 +170,28 @@ const recent = (await getAllWriting()).slice(0, 5);
     padding-block: var(--space-5);
   }
 
-  .see-all {
-    margin: var(--space-5) 0 0;
-    font-size: var(--size-sm);
+  /* Each subject sits on its own line with its count pushed to the
+     right, so the numbers form a column the eye can compare. */
+  .tag-links a {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
   }
 
-  .coming-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: var(--space-6);
-    margin-top: var(--space-5);
-  }
-
-  .coming-item h3 {
-    font-family: var(--font-sans);
-    font-size: var(--size-base);
-    font-weight: 700;
-    margin: 0 0 var(--space-2);
-  }
-
-  .coming-item p {
-    margin: 0;
+  /* A count is a figure, so it is mono with tabular digits like
+     every other number on the site. */
+  .count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     color: var(--colour-ink-muted);
-    line-height: var(--leading-body);
+  }
+
+  /* Written as "list then paragraph" rather than just
+     ".more-subjects", and that is not stylistic. SideBlock sets the
+     margin on every paragraph inside it, and that rule is more
+     specific than a single class here, so a simpler selector loses
+     and the link ends up jammed against the last subject. */
+  .tag-links + .more-subjects {
+    margin-top: var(--space-4);
   }
 </style>
