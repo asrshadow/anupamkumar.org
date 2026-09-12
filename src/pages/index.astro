@@ -42,20 +42,25 @@ function displayTag(tag: string): string {
   description="Writing, data and tools on public finance, public policy, economics and geoeconomics — with the aim of making economic information usable by people who are not economists."
 >
   <PageShell asideLabel="Elsewhere on this site">
-    <!-- Every page needs exactly one h1, and it has to be the
-         identity of the page rather than the title of one article —
-         otherwise the newest essay's title would be read as the
-         name of the whole site.
+    <!-- THE H1 IS HERE BUT NOT SHOWN, AND BOTH HALVES OF THAT
+         matter.
 
-         Set at --size-xl and not --size-3xl on purpose: the
-         featured piece below it should be the largest thing here. -->
-    <header class="identity">
-      <h1>Anupam Kumar</h1>
-      <p>
-        Writing, data and tools on public finance, public policy, economics and
-        geoeconomics.
-      </p>
-    </header>
+         It has to exist, and it has to be the name of the site
+         rather than the title of an article. It is what a screen
+         reader announces as the name of the page and what a search
+         engine reads as its subject, so putting the newest essay's
+         title here would make that essay the name of the whole
+         site. Having no h1 at all leaves the page unnamed.
+
+         It is not shown because the page should open with the
+         writing. The name is already at the top left of every page
+         in the header, so displaying it again immediately below
+         would say the same thing twice.
+
+         .visually-hidden keeps it available to screen readers.
+         display: none would hide it from them too, which would
+         defeat the point of having it. -->
+    <h1 class="visually-hidden">Anupam Kumar</h1>
 
     {
       featured ? (
@@ -143,23 +148,6 @@ function displayTag(tag: string): string {
 </BaseLayout>
 
 <style>
-  .identity {
-    max-width: var(--measure);
-    margin-bottom: var(--space-7);
-  }
-
-  .identity h1 {
-    font-size: var(--size-xl);
-    margin: 0 0 var(--space-2);
-  }
-
-  .identity p {
-    margin: 0;
-    color: var(--colour-ink-muted);
-    line-height: var(--leading-body);
-    text-wrap: pretty;
-  }
-
   .see-all {
     margin: var(--space-6) 0 0;
     font-size: var(--size-sm);

@@ -13,6 +13,7 @@
 // ============================================================
 
 import type { Piece } from "../lib/writing";
+import { excerptOf } from "../lib/writing";
 import PostMeta from "./PostMeta.astro";
 import TagList from "./TagList.astro";
 
@@ -21,6 +22,19 @@ interface Props {
 }
 
 const { piece } = Astro.props;
+
+// A longer summary than the listing cards get — around forty
+// words, drawn from the opening of the piece.
+//
+// The one-sentence "description" is not used here, because it is
+// also the search-engine description and those get cut off at
+// about 155 characters. Making it long enough for this spot would
+// spoil it there.
+//
+// If the piece has no usable opening paragraph — it is all
+// headings, or a stub — fall back to the description rather than
+// showing nothing.
+const summary = excerptOf(piece, 40) || piece.description;
 ---
 
 <article class="featured">
@@ -28,7 +42,7 @@ const { piece } = Astro.props;
     <a href={piece.url}>{piece.title}</a>
   </h2>
 
-  <p class="featured-standfirst">{piece.description}</p>
+  <p class="featured-standfirst">{summary}</p>
 
   <PostMeta
     date={piece.date}

@@ -171,6 +171,100 @@ export async function getPiecesByTag(tag: string): Promise<Piece[]> {
 // for software.
 // ============================================================
 
+// ============================================================
+// STEP 8 — A longer summary, for the featured piece
+//
+// The "description" field in a piece's frontmatter is ONE
+// SENTENCE. That is on purpose: it is also what search engines
+// show, and they cut a description off at roughly 155 characters.
+// Writing 40 words there would fix the home page and spoil the
+// search result.
+//
+// So where a longer summary is wanted — currently only the
+// featured piece at the top of the home page — it is taken from
+// the opening of the piece instead. Nothing extra to write.
+//
+// This reads the raw Markdown, so it has to strip the Markdown
+// out again. That is what most of the function below is doing.
+// ============================================================
+
+export function excerptOf(piece: Piece, wordLimit = 40): string {
+  // The piece's own text, before Astro turns it into HTML.
+  const raw = piece.entry.body ?? "";
+
+  // Work paragraph by paragraph, and take the first one that is
+  // actually prose. The opening of a piece is often an image, a
+  // generated comment or a heading, none of which summarise it.
+  const paragraphs = raw.split(/\n\s*\n/);
+
+  for (const block of paragraphs) {
+    const text = stripMarkdown(block);
+
+    // Too short to be a real paragraph — a caption, a stray line.
+    if (text.length < 60) continue;
+
+    return trimToWords(text, wordLimit);
+  }
+
+  // Nothing usable. The caller falls back to the description.
+  return "";
+}
+
+/** Take the Markdown marks off a block, leaving the words. */
+function stripMarkdown(block: string): string {
+  let text = block;
+
+  // Generated files from Substack open with an HTML comment.
+  text = text.replace(/<!--[\s\S]*?-->/g, "");
+
+  // Images first, so that the "!" of an image is gone before links
+  // are handled — otherwise an image becomes a stray "!" plus the
+  // alt text, which reads as shouting.
+  text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, "");
+
+  // A link keeps its words and loses its address.
+  text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");
+
+  // Any remaining HTML tags.
+  text = text.replace(/<[^>]+>/g, "");
+
+  // Emphasis, code marks, heading hashes, quote marks and list
+  // bullets at the start of a line.
+  text = text.replace(/[*_`]/g, "");
+  text = text.replace(/^\s{0,3}#{1,6}\s+/gm, "");
+  text = text.replace(/^\s{0,3}[>\-+*]\s+/gm, "");
+
+  // Collapse every run of whitespace, including the line breaks
+  // inside a paragraph, into single spaces.
+  return text.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Cut to roughly the word limit, then stop at the end of a
+ * sentence if one is near, so the summary does not break off in
+ * the middle of a clause.
+ */
+function trimToWords(text: string, wordLimit: number): string {
+  const words = text.split(" ");
+
+  // Already short enough to use whole.
+  if (words.length <= wordLimit) return text;
+
+  const cut = words.slice(0, wordLimit).join(" ");
+
+  // Prefer ending on a full stop, if one falls in the last third.
+  const lastStop = Math.max(
+    cut.lastIndexOf(". "),
+    cut.lastIndexOf("? "),
+    cut.lastIndexOf("! "),
+  );
+
+  if (lastStop > cut.length * 0.6) return cut.slice(0, lastStop + 1);
+
+  // Otherwise trail off, so it is visibly an extract.
+  return cut.replace(/[,;:]$/, "") + "…";
+}
+
 export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
