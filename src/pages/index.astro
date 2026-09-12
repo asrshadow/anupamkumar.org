@@ -16,7 +16,7 @@ import PageShell from "../components/PageShell.astro";
 import SideBlock from "../components/SideBlock.astro";
 import FeaturedPiece from "../components/FeaturedPiece.astro";
 import PieceCard from "../components/PieceCard.astro";
-import { getAllWriting, getAllTags } from "../lib/writing";
+import { getAllWriting, getAllTags, displayTag } from "../lib/writing";
 
 const everything = await getAllWriting();
 
@@ -30,11 +30,6 @@ const alsoRecent = everything.slice(1, 5);
 // will be forty entries long in two years, and a sidebar cannot
 // hold forty. The full list is on /writing/.
 const topTags = (await getAllTags()).slice(0, 8);
-
-function displayTag(tag: string): string {
-  const spaced = tag.replace(/-/g, " ");
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-}
 ---
 
 <BaseLayout

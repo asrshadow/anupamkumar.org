@@ -4,6 +4,8 @@
 // The subject tags on a piece, each linking to its tag page.
 // ============================================================
 
+import { displayTag } from "../lib/writing";
+
 interface Props {
   tags: string[];
   /** A heading above the list, when it needs one. */
@@ -14,10 +16,6 @@ const { tags, label } = Astro.props;
 
 // Tags are stored lowercase with dashes, like "public-finance".
 // Readers should see "Public finance".
-function displayTag(tag: string): string {
-  const spaced = tag.replace(/-/g, " ");
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-}
 ---
 
 {

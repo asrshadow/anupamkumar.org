@@ -8,7 +8,7 @@
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PieceCard from "../../components/PieceCard.astro";
-import { getAllTags, getAllWriting } from "../../lib/writing";
+import { getAllTags, getAllWriting, displayTag } from "../../lib/writing";
 
 export async function getStaticPaths() {
   const tags = await getAllTags();
@@ -26,20 +26,20 @@ export async function getStaticPaths() {
 const { tag, pieces } = Astro.props;
 
 // "public-finance" reads as "Public finance".
+const heading = displayTag(tag);
 const spaced = tag.replace(/-/g, " ");
-const displayTag = spaced.charAt(0).toUpperCase() + spaced.slice(1);
 
 // English needs the singular when there is exactly one.
 const countWords = pieces.length === 1 ? "1 piece" : `${pieces.length} pieces`;
 ---
 
 <BaseLayout
-  title={displayTag}
+  title={heading}
   description={`Writing tagged ${spaced} — ${countWords}.`}
 >
   <header class="page-header">
     <p class="section-heading">Tagged</p>
-    <h1>{displayTag}</h1>
+    <h1>{heading}</h1>
     <p class="count">{countWords}</p>
   </header>
 

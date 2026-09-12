@@ -1482,8 +1482,36 @@ examples fits the first real example badly and sets a precedent by then:
 - Zero dead internal links across the whole built site
 - Deleting `src/tools/` still builds and `/tools/` still shows its empty state, so the
   one-way import rule holds before the first tool exists
-- An essay page ships no JavaScript beyond two small inline scripts, and about 100 KB of
-  fonts, against a budget of 250 KB total
+
+### Page weight, measured on the built site
+
+An essay page ships **no JavaScript at all** beyond two small inline scripts. Weight is
+almost entirely fonts, and a photograph where a piece has one.
+
+| Page | Total | Fonts | Image | Budget |
+|---|---|---|---|---|
+| Essay with a photograph | 224 KB | 103 KB | 71 KB | < 250 KB |
+| Essay without one | 186 KB | 134 KB | — | < 250 KB |
+| Home | 170 KB | 119 KB | — | < 250 KB |
+| Writings and Notes | 148 KB | 99 KB | — | < 250 KB |
+
+> **A font trap that cost 100 KB a page, recorded so it is not repeated.** Importing
+> `@fontsource/<family>/latin-400.css` alongside `latin-ext-400.css` looks leaner than the
+> plain `400.css` and is the opposite. **The per-subset files carry no `unicode-range`**,
+> so they are two identical `@font-face` declarations for one family, style and weight, and
+> the browser cannot choose between them by which characters a page uses. It fetches both.
+> That put 16 font files and 245 KB on a page with no accented characters at all.
+>
+> The plain `400.css` declares every subset *with* its range, so only the needed subsets
+> download: six to eight files instead of sixteen. The stylesheet is about 12 KB larger and
+> that is a good trade.
+>
+> **Measure the fonts a page actually downloads before believing any change here is an
+> improvement.** This was estimated rather than measured for a day, and the estimate was
+> wrong by more than 100 KB.
+
+**A photograph in a piece** is resized to about 1280px before being committed, which covers
+a high-density screen at the 612px reading column. Astro converts it to WebP at build time.
 
 **Resist building a tool until the writing exists.** Phase 2 is the data layer, Phase 3
 the first two tools. The full roadmap is in the architecture blueprint.

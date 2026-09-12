@@ -14,15 +14,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageShell from "../../components/PageShell.astro";
 import SideBlock from "../../components/SideBlock.astro";
 import PieceCard from "../../components/PieceCard.astro";
-import { getAllWriting, getAllTags } from "../../lib/writing";
+import { getAllWriting, getAllTags, displayTag } from "../../lib/writing";
 
 const pieces = await getAllWriting();
 const tags = await getAllTags();
-
-function displayTag(tag: string): string {
-  const spaced = tag.replace(/-/g, " ");
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-}
 ---
 
 <BaseLayout

@@ -17,34 +17,39 @@ import Footer from "../components/Footer.astro";
 // second connection before the first paint is the slowest thing
 // on an otherwise light page.
 //
-// Only the weights actually used are imported, and only two
-// alphabet subsets. The plain "400.css" form declares every subset
-// a font has — Cyrillic, Greek, Vietnamese — which this site will
-// never show, and each one adds to the stylesheet a reader must
-// download before any text appears.
+// Only the weights actually used are imported. Every extra weight
+// is another file a reader downloads.
 //
-// WHY LATIN-EXT IS INCLUDED AND NOT DROPPED TOO: it carries the
-// accented and macron letters that transliterated Indian names
-// need — Bihār, Galvão, Ruzicka. Without it those words fall back
-// to a different typeface mid-sentence.
-import "@fontsource/source-serif-4/latin-400.css";
-import "@fontsource/source-serif-4/latin-ext-400.css";
-import "@fontsource/source-serif-4/latin-400-italic.css";
-import "@fontsource/source-serif-4/latin-ext-400-italic.css";
-import "@fontsource/source-serif-4/latin-600.css";
-import "@fontsource/source-serif-4/latin-ext-600.css";
-import "@fontsource/source-serif-4/latin-700.css";
-import "@fontsource/source-serif-4/latin-ext-700.css";
-import "@fontsource/public-sans/latin-400.css";
-import "@fontsource/public-sans/latin-ext-400.css";
-import "@fontsource/public-sans/latin-600.css";
-import "@fontsource/public-sans/latin-ext-600.css";
-import "@fontsource/public-sans/latin-700.css";
-import "@fontsource/public-sans/latin-ext-700.css";
-import "@fontsource/ibm-plex-mono/latin-400.css";
-import "@fontsource/ibm-plex-mono/latin-ext-400.css";
-import "@fontsource/ibm-plex-mono/latin-600.css";
-import "@fontsource/ibm-plex-mono/latin-ext-600.css";
+// WHY THE PLAIN "400.css" AND NOT "latin-400.css", WHICH LOOKS
+// LEANER AND IS NOT.
+//
+// The per-subset files — latin-400.css, latin-ext-400.css — carry
+// NO unicode-range. They are therefore two identical @font-face
+// declarations for the same family, style and weight, and a
+// browser has no way to choose between them by which characters a
+// page actually uses. It fetches both. Importing latin and
+// latin-ext for three families meant 16 font files and 245 KB on
+// a page with no accented characters at all, against a budget of
+// 250 KB for the whole page.
+//
+// The plain file declares every subset WITH its unicode-range, so
+// the browser downloads only the subsets whose characters appear.
+// The stylesheet itself is larger, by about 12 KB before
+// compression, and that is a good trade for well over 100 KB of
+// fonts a reader never needed.
+//
+// Measured on 12 September 2026. If these imports are ever
+// changed back, measure the fonts a page actually downloads
+// before believing it is an improvement.
+import "@fontsource/source-serif-4/400.css";
+import "@fontsource/source-serif-4/400-italic.css";
+import "@fontsource/source-serif-4/600.css";
+import "@fontsource/source-serif-4/700.css";
+import "@fontsource/public-sans/400.css";
+import "@fontsource/public-sans/600.css";
+import "@fontsource/public-sans/700.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/600.css";
 
 import "../styles/tokens.css";
 import "../styles/base.css";

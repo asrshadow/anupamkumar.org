@@ -315,6 +315,58 @@ function trimToWords(text: string, wordLimit: number): string {
   return cut.replace(/[,;:]$/, "") + "…";
 }
 
+// ============================================================
+// STEP 9 — Writing a tag out for a reader
+//
+// Tags are stored lowercase with dashes, because that is what a
+// web address needs: "public-finance", "brics". A reader should
+// see "Public finance" and "BRICS".
+//
+// The acronym list is why this is a shared function rather than
+// one line repeated on each page. Simply capitalising the first
+// letter turns "brics" into "Brics" and "gst" into "Gst", which
+// looks like a mistake on a public finance site — and it was one,
+// on the first essay that used such a tag.
+//
+// ADD TO THIS LIST whenever a tag is an acronym. It is the whole
+// point of the function.
+// ============================================================
+
+const ACRONYM_TAGS = new Set([
+  "brics",
+  "gst",
+  "gdp",
+  "gsdp",
+  "rbi",
+  "cag",
+  "cga",
+  "imf",
+  "oecd",
+  "un",
+  "us",
+  "frbm",
+  "ndb",
+  "plfs",
+  "nss",
+  "nfhs",
+  "asi",
+  "cea",
+  "g20",
+  "g7",
+  "ai",
+]);
+
+export function displayTag(tag: string): string {
+  // An acronym is shown in capitals, whole.
+  if (ACRONYM_TAGS.has(tag)) return tag.toUpperCase();
+
+  // Anything else: dashes become spaces, first letter capitalised.
+  // Only the first word — "public finance", not "Public Finance",
+  // because a tag is a subject and not a title.
+  const spaced = tag.replace(/-/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
 export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
