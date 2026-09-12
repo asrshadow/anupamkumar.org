@@ -1437,14 +1437,17 @@ data/**/microdata/
 - [x] RSS feed, sitemap, Pagefind search, dark mode with no flash on load
 - [x] Substack RSS archiver and its daily workflow
 - [x] Accessibility check and dead-link check workflows
-- [ ] **Four real pieces published.** This is the remaining item, and it is the point of
-      the phase. A site with four good essays and no tools is a real site; a site with
-      three tools and no writing is a portfolio of unfinished experiments.
-- [ ] Delete the two placeholder pieces once real writing exists:
+- [ ] **Four real pieces published. One so far.** This is the remaining item and it is the
+      point of the phase. A site with four good essays and no tools is a real site; a site
+      with three tools and no writing is a portfolio of unfinished experiments.
+      - [x] *BRICS — an economic multilateral association of emerging market economies*,
+            12 September 2026
+- [ ] Delete the two placeholder pieces once there is enough real writing:
       `content/essays/11-09-2026-hello.md` and
       `content/notes/11-09-2026-what-notes-are-for.md`.
-      **Not before then** — the home page now leads with the newest piece, so deleting
-      them early would feature a Substack post from March 2026 and leave `/notes/` empty.
+      **The essay placeholder can go now** — the BRICS piece is newer, so the home page
+      would still lead with real writing. **The note placeholder cannot yet**: it is the
+      only note, and deleting it leaves `/notes/` empty.
 
 ### Layout and sections — the 12 September 2026 work order
 
@@ -1460,7 +1463,27 @@ Steps 1 to 10 done and published on 12 September 2026.
 - [x] 8 — the Datasets and Tools sections, and `/registry.json`
 - [x] 9 — About, rewritten with a profile and photo
 - [x] 10 — full check, then publish
-- [ ] 11 — **publish a real piece.** Not a build task. See the Phase 1 item above.
+- [x] 11 — a real piece published. Three more wanted; see the Phase 1 item above.
+
+**Added after the work order**, on the same day: a piece's first image is used
+automatically as its thumbnail on the home page and every listing, and listing entries
+carry the same forty-word summary the featured piece uses. See §17.1.
+
+### Picking this up again
+
+**Adding a post needs no code and no session with Claude.** Write the file, set
+`draft: false`, push. The routine is §17.1, and the same thing in plainer words is
+[docs/how-to/publish-a-piece-of-writing.md](docs/how-to/publish-a-piece-of-writing.md).
+The first image in the piece becomes its thumbnail on its own.
+
+**What is worth a session**, in the order it is worth doing:
+
+1. **The first real dataset.** Needs the detail page at `/datasets/<id>/` and the endpoint
+   that serves each dataset's files. The reader and `/registry.json` are already built and
+   tested, so this is smaller than it was.
+2. **The first tool**, with `ToolFrame` built alongside it.
+3. A chart in a piece, if one is wanted before either of the above. §17.1 settles how
+   charts are exported and why they are treated as printed plates in both themes.
 
 **Deliberately not built yet**, and both for the same reason — a page designed against zero
 examples fits the first real example badly and sets a precedent by then:
