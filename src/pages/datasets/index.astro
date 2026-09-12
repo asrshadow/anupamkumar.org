@@ -1,0 +1,257 @@
+---
+// ============================================================
+// /datasets/ — one entry per published dataset.
+//
+// There are none yet, and the page says so plainly rather than
+// showing an empty grid. A navigation item may lead to a section
+// with no entries as long as the page explains what is coming; it
+// may never lead to a blank page or a 404.
+//
+// The per-dataset page at /datasets/<id>/ is deliberately not
+// built yet. It has to show a columns table, a provenance box,
+// vintage handling and a licence for a dataset that actually
+// exists, and datasets on this site come in very different shapes.
+// A detail page designed against no examples fits the first real
+// dataset badly and the second one worse. It gets built alongside
+// the first real dataset.
+// ============================================================
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageShell from "../../components/PageShell.astro";
+import SideBlock from "../../components/SideBlock.astro";
+import { getDatasets } from "../../lib/datasets";
+import { formatDate } from "../../lib/writing";
+
+const datasets = getDatasets();
+---
+
+<BaseLayout
+  title="Datasets"
+  description="Cleaned Indian public finance data, each one carrying its source, the date it was retrieved, and every column described with its unit."
+>
+  <PageShell asideLabel="About the datasets">
+    <header class="page-header">
+      <h1>Datasets</h1>
+      <p class="page-intro">
+        Cleaned public finance data, documented well enough to cite. The
+        original downloads are kept untouched alongside the cleaned version, so
+        anyone can check the cleaning rather than take it on trust.
+      </p>
+    </header>
+
+    {
+      datasets.length > 0 ? (
+        <ul class="dataset-list">
+          {datasets.map((dataset) => (
+            <li class="dataset-entry">
+              <h2 class="dataset-title">
+                <a href={`/datasets/${dataset.id}/`}>{dataset.title}</a>
+              </h2>
+
+              <p class="dataset-description">{dataset.description}</p>
+
+              <dl class="dataset-facts">
+                {dataset.sources[0]?.publisher && (
+                  <div>
+                    <dt>Published by</dt>
+                    <dd>{dataset.sources[0].publisher}</dd>
+                  </div>
+                )}
+
+                <div>
+                  <dt>Retrieved</dt>
+                  <dd>
+                    {dataset.sources[0]?.retrieved
+                      ? formatDate(new Date(dataset.sources[0].retrieved))
+                      : formatDate(new Date(dataset.updated))}
+                  </dd>
+                </div>
+
+                {dataset.totalRows !== undefined && (
+                  <div>
+                    <dt>Rows</dt>
+                    <dd class="numeric">
+                      {dataset.totalRows.toLocaleString("en-IN")}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+
+              {
+                /* The staleness marker carries a word as well as a
+                   colour, because colour alone must never carry
+                   meaning. */
+                dataset.isStale && (
+                  <p class="stale">
+                    Possibly out of date — the source may have published a newer
+                    version since this was retrieved.
+                  </p>
+                )
+              }
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="coming">
+          <p><strong>The first datasets are being prepared.</strong></p>
+
+          <p>
+            Each one will carry the source it came from with a direct link, the
+            date it was retrieved, every column described with its unit, and a
+            script that rebuilds it from the original files. The original
+            downloads are kept untouched alongside the cleaned version, so
+            anyone can check the cleaning rather than take it on trust.
+          </p>
+
+          <p>
+            Union budget expenditure and the Reserve Bank of India's study of
+            state budgets are first in the queue.
+          </p>
+        </div>
+      )
+    }
+
+    <Fragment slot="aside">
+      <SideBlock title="What makes a dataset here">
+        <ul class="plain">
+          <li>Where it came from, with a direct link</li>
+          <li>Which vintage it is, kept separate from the others</li>
+          <li>Every column described, with its unit</li>
+          <li>What was changed, and a script that redoes it</li>
+        </ul>
+      </SideBlock>
+
+      <SideBlock title="Reuse">
+        <p>
+          The cleaned datasets are published under{" "}
+          <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+        </p>
+        <p>
+          Official figures keep their own publisher's licence, which is recorded
+          with each dataset.
+        </p>
+      </SideBlock>
+
+      <SideBlock title="For machines">
+        <ul>
+          <li><a href="/registry.json">registry.json</a></li>
+        </ul>
+      </SideBlock>
+    </Fragment>
+  </PageShell>
+</BaseLayout>
+
+<style>
+  .page-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+  }
+
+  .page-intro {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
+  }
+
+  /* The empty state: prose in an accent-rail callout, matching the
+     notice on an archived piece. Deliberately NOT a row of empty
+     skeleton cards, which would promise something that is not
+     there. */
+  .coming {
+    max-width: var(--measure);
+    padding: var(--space-5);
+    border-left: 3px solid var(--colour-accent);
+    background: var(--colour-accent-soft);
+    border-radius: 0 var(--radius-data) var(--radius-data) 0;
+  }
+
+  .coming p {
+    margin: 0 0 var(--space-4);
+    line-height: var(--leading-body);
+  }
+
+  .coming p:last-child {
+    margin-bottom: 0;
+  }
+
+  .dataset-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  /* A dataset is a record, not a card: square corners, a hairline
+     border, no shadow. */
+  .dataset-entry {
+    padding: var(--space-5);
+    border: 1px solid var(--colour-rule);
+    border-radius: var(--radius-data);
+    background: var(--colour-surface);
+  }
+
+  .dataset-title {
+    font-family: var(--font-serif);
+    font-size: var(--size-lg);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    margin: 0 0 var(--space-2);
+  }
+
+  .dataset-title a {
+    color: var(--colour-ink);
+    text-decoration: none;
+  }
+
+  .dataset-title a:hover {
+    color: var(--colour-accent);
+    text-decoration: underline;
+  }
+
+  .dataset-description {
+    margin: 0 0 var(--space-4);
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    max-width: var(--measure);
+  }
+
+  /* The facts about the dataset, as a definition list: each label
+     is genuinely the name of the value under it, which is what a
+     definition list is for and what a screen reader announces. */
+  .dataset-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+  }
+
+  .dataset-facts dt {
+    font-size: var(--size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+  }
+
+  .dataset-facts dd {
+    margin: 0;
+    color: var(--colour-ink);
+  }
+
+  .stale {
+    margin: var(--space-4) 0 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: 3px solid var(--colour-warning);
+    background: var(--colour-surface-sunk);
+    font-size: var(--size-sm);
+    color: var(--colour-ink);
+  }
+
+  .plain {
+    list-style: none;
+  }
+</style>

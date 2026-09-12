@@ -1,0 +1,208 @@
+---
+// ============================================================
+// /tools/ — one entry per tool.
+//
+// There are none yet, and the page says so plainly rather than
+// showing an empty grid.
+//
+// ToolFrame — the shared wrapper that gives every tool its title,
+// provenance box, download link, status badge, small-screen card
+// and lazy loading — is deliberately not built yet. Written
+// against no tool it would be wrong about the thing that matters
+// most, which is where the boundary between the frame and the tool
+// falls. It gets built alongside the first real tool.
+// ============================================================
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageShell from "../../components/PageShell.astro";
+import SideBlock from "../../components/SideBlock.astro";
+import { getTools } from "../../lib/tools";
+
+const tools = getTools();
+
+function displayField(field: string): string {
+  const spaced = field.replace(/-/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+---
+
+<BaseLayout
+  title="Tools"
+  description="Small interactive tools for public finance data, running entirely in your browser. Nothing you open is sent anywhere."
+>
+  <PageShell asideLabel="About the tools">
+    <header class="page-header">
+      <h1>Tools</h1>
+      <p class="page-intro">
+        Small interactive things for working with public finance data. Each one
+        runs entirely in your browser.
+      </p>
+    </header>
+
+    {
+      tools.length > 0 ? (
+        <ul class="tool-list">
+          {tools.map((tool) => (
+            <li class="tool-entry">
+              <h2 class="tool-title">
+                <a href={`/tools/${tool.id}/`}>{tool.title}</a>
+              </h2>
+
+              <p class="tool-summary">{tool.summary}</p>
+
+              <div class="tool-meta">
+                {
+                  /* The status carries a word, never a colour alone. */
+                  tool.status !== "stable" && (
+                    <span class="status">{tool.status}</span>
+                  )
+                }
+                {tool.fields.map((field) => (
+                  <span class="field">{displayField(field)}</span>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="coming">
+          <p><strong>The first tools are being prepared.</strong></p>
+
+          <p>
+            Everything will compute in your browser. If you open a state finance
+            spreadsheet in a tool here, that file never leaves your laptop,
+            because there is no server for it to go to. For anyone in
+            government, a think tank or a newsroom handling figures that are not
+            yet public, that is not a technical detail.
+          </p>
+        </div>
+      )
+    }
+
+    <Fragment slot="aside">
+      <SideBlock title="How these work">
+        <ul class="plain">
+          <li>Everything computes in your browser</li>
+          <li>Nothing you open is uploaded anywhere</li>
+          <li>The data behind each one is downloadable</li>
+          <li>Heavy parts load only when you open a tool</li>
+        </ul>
+      </SideBlock>
+
+      <SideBlock title="Datasets">
+        <p>
+          Every tool reads data published here in its own right, so the figures
+          can be checked and cited without the tool.
+        </p>
+        <p><a href="/datasets/">Browse the datasets</a></p>
+      </SideBlock>
+    </Fragment>
+  </PageShell>
+</BaseLayout>
+
+<style>
+  .page-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+  }
+
+  .page-intro {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
+  }
+
+  /* Prose in an accent-rail callout, not a row of empty skeleton
+     cards, which would promise something that is not there. */
+  .coming {
+    max-width: var(--measure);
+    padding: var(--space-5);
+    border-left: 3px solid var(--colour-accent);
+    background: var(--colour-accent-soft);
+    border-radius: 0 var(--radius-data) var(--radius-data) 0;
+  }
+
+  .coming p {
+    margin: 0 0 var(--space-4);
+    line-height: var(--leading-body);
+  }
+
+  .coming p:last-child {
+    margin-bottom: 0;
+  }
+
+  .tool-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  /* A tool panel is interactive, so it gets the softened corner
+     that says so — unlike a dataset, which is a record. */
+  .tool-entry {
+    padding: var(--space-5);
+    border: 1px solid var(--colour-rule);
+    border-radius: var(--radius-control);
+    background: var(--colour-surface);
+  }
+
+  .tool-title {
+    font-family: var(--font-serif);
+    font-size: var(--size-lg);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    margin: 0 0 var(--space-2);
+  }
+
+  .tool-title a {
+    color: var(--colour-ink);
+    text-decoration: none;
+  }
+
+  .tool-title a:hover {
+    color: var(--colour-accent);
+    text-decoration: underline;
+  }
+
+  .tool-summary {
+    margin: 0 0 var(--space-4);
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    max-width: var(--measure);
+  }
+
+  .tool-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* Pills, because these are metadata about the tool and must
+     never be mistaken for the tool's own data. */
+  .status,
+  .field {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--colour-rule);
+    border-radius: var(--radius-pill);
+    background: var(--colour-surface-sunk);
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+  }
+
+  .status {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--colour-warning);
+    border-color: var(--colour-warning);
+  }
+
+  .plain {
+    list-style: none;
+  }
+</style>
