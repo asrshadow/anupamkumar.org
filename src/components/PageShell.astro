@@ -1,0 +1,140 @@
+---
+// ============================================================
+// PAGE SHELL
+// Gives a page either one column or two.
+//
+// A page passes its content in normally, and optionally passes a
+// sidebar in a second slot called "aside". If it passes an aside,
+// the page becomes two columns on a wide screen. If it does not,
+// the page stays one full-width column and no empty second column
+// is created.
+//
+// HOW A PAGE USES IT
+//
+//   <PageShell asideLabel="About this piece">
+//     ...the main content...
+//     <Fragment slot="aside">
+//       ...the sidebar blocks...
+//     </Fragment>
+//   </PageShell>
+//
+// WHAT THE SIDEBAR IS FOR
+// Navigating the material on the page: tags, related pieces,
+// links out, the state of a section. It never carries the
+// argument. If something in it is worth reading properly, it
+// belongs in the main column instead. This is CLAUDE.md §8.8.
+// ============================================================
+
+interface Props {
+  /**
+   * What a screen reader announces when the reader reaches the
+   * sidebar. A page can have several landmarks, and an unlabelled
+   * one is announced only as "complementary", which tells nobody
+   * anything. Required in practice whenever an aside is passed.
+   */
+  asideLabel?: string;
+}
+
+const { asideLabel = "More on this page" } = Astro.props;
+
+// Did the page actually pass anything for the sidebar?
+//
+// This matters more than it looks. Without the check, a page with
+// no sidebar would still get a second grid column, and the reading
+// column would be squeezed to make room for nothing at all.
+const hasAside = Astro.slots.has("aside");
+---
+
+<div class:list={["shell", { "has-aside": hasAside }]}>
+  <div class="shell-main">
+    <slot />
+  </div>
+
+  {
+    /* The aside comes AFTER the main column in the HTML, and is
+       never moved before it with CSS. Someone reading with a
+       keyboard or a screen reader meets the content first, and the
+       visual order and the reading order must not disagree. */
+    hasAside && (
+      <aside class="shell-aside" aria-label={asideLabel}>
+        <slot name="aside" />
+      </aside>
+    )
+  }
+</div>
+
+<style>
+  .shell {
+    display: grid;
+
+    /* Row gap is larger than column gap: when the two columns stack
+       on a narrow screen, the aside needs clear separation from the
+       content above it. */
+    gap: var(--space-7) var(--space-6);
+
+    /* Lets the aside be sticky. Without this, both columns stretch
+       to the height of the taller one, and a stretched element has
+       nothing to stick within. */
+    align-items: start;
+  }
+
+  /* WHY min-width: 0 IS HERE, because it looks like it does nothing.
+     A grid item refuses by default to shrink below the width of its
+     widest child. One wide table inside the column would therefore
+     push the whole page sideways. This lets the column shrink and
+     hands the overflow to the table's own scrolling box, which is
+     what keeps phones working. */
+  .shell-main {
+    min-width: 0;
+  }
+
+  /* Two columns only when there is room for them. Below this width
+     an 18rem sidebar starts squeezing the reading column, which
+     matters more. */
+  @media (min-width: 64rem) {
+    .shell.has-aside {
+      /* minmax(0, 1fr) rather than a plain 1fr, for the same reason
+         as min-width above: a plain 1fr will not shrink below its
+         widest child. */
+      grid-template-columns: minmax(0, 1fr) var(--width-aside);
+    }
+  }
+
+  .shell-aside {
+    min-width: 0;
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    line-height: var(--leading-ui);
+    color: var(--colour-ink-muted);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  /* Below the breakpoint the aside sits under the content with a
+     rule above it, so it reads as an appendix rather than as a
+     stray column.
+
+     It is never hidden. Hiding it would take the tags away from
+     every reader on a phone, which is most of them. */
+  @media (max-width: 63.999rem) {
+    .shell-aside {
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--colour-rule);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .shell-aside {
+      position: sticky;
+      top: var(--space-6);
+    }
+  }
+
+  /* NOTE: there is deliberately no max-height and no overflow on the
+     aside. A sticky element taller than the screen simply stops
+     sticking, which is the right behaviour. Giving it its own
+     scrollbar would create a second scrolling region that is awkward
+     on a trackpad and easy to get lost in with a keyboard. */
+</style>

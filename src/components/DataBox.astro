@@ -22,7 +22,7 @@ const { datasets } = Astro.props;
 {
   datasets.length > 0 && (
     <aside class="data-box" aria-labelledby="data-box-heading">
-      <h2 id="data-box-heading" class="data-box-heading">
+      <h2 id="data-box-heading" class="section-heading">
         The data behind this piece
       </h2>
 
@@ -55,16 +55,6 @@ const { datasets } = Astro.props;
     background: var(--colour-accent-soft);
     border-radius: 0 var(--radius-data) var(--radius-data) 0;
     max-width: var(--measure);
-  }
-
-  .data-box-heading {
-    font-family: var(--font-sans);
-    font-size: var(--size-xs);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--colour-ink-muted);
-    margin: 0 0 var(--space-3);
   }
 
   .data-list {

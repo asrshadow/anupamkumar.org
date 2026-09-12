@@ -35,7 +35,7 @@ const recent = (await getAllWriting()).slice(0, 5);
   </section>
 
   <section class="recent" aria-labelledby="recent-heading">
-    <h2 id="recent-heading" class="section-heading">Recent writing</h2>
+    <h2 id="recent-heading" class="section-heading section-heading--ruled">Recent writing</h2>
 
     {
       recent.length > 0 ? (
@@ -59,7 +59,7 @@ const recent = (await getAllWriting()).slice(0, 5);
   </section>
 
   <section class="coming" aria-labelledby="coming-heading">
-    <h2 id="coming-heading" class="section-heading">What is coming</h2>
+    <h2 id="coming-heading" class="section-heading section-heading--ruled">What is coming</h2>
 
     <div class="coming-grid">
       <div class="coming-item">
@@ -111,19 +111,6 @@ const recent = (await getAllWriting()).slice(0, 5);
     color: var(--colour-ink-muted);
     margin: 0;
     text-wrap: pretty;
-  }
-
-  .section-heading {
-    font-family: var(--font-sans);
-    font-size: var(--size-xs);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--colour-ink-muted);
-
-    margin: 0 0 var(--space-2);
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--colour-ink);
   }
 
   .recent,

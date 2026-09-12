@@ -38,7 +38,7 @@ const countWords = pieces.length === 1 ? "1 piece" : `${pieces.length} pieces`;
   description={`Writing tagged ${spaced} — ${countWords}.`}
 >
   <header class="page-header">
-    <p class="eyebrow">Tagged</p>
+    <p class="section-heading">Tagged</p>
     <h1>{displayTag}</h1>
     <p class="count">{countWords}</p>
   </header>
@@ -58,16 +58,6 @@ const countWords = pieces.length === 1 ? "1 piece" : `${pieces.length} pieces`;
     margin-bottom: var(--space-5);
     padding-bottom: var(--space-4);
     border-bottom: 1px solid var(--colour-rule);
-  }
-
-  .eyebrow {
-    font-family: var(--font-sans);
-    font-size: var(--size-xs);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--colour-ink-muted);
-    margin: 0 0 var(--space-2);
   }
 
   .page-header h1 {

@@ -279,6 +279,37 @@ h4 {
   margin-top: 0;
 }
 
+/* ---- The small label heading -------------------------------------------
+   Used above a section of a listing page, above each block in a sidebar,
+   above the footer columns, and above the data box on an essay. Small,
+   uppercase, muted sans: it names a group of things without competing with
+   the things themselves.
+
+   This lives here rather than in each component because the same seven
+   declarations were copied into five separate files, which is five places
+   for them to drift apart.
+
+   It is a LOOK, not a heading level. Use whichever of h2 or h3 the page's
+   heading order actually calls for — headings must never skip a level. */
+.section-heading {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--colour-ink-muted);
+  margin: 0 0 var(--space-3);
+}
+
+/* The variant with a rule under it, which separates a major section of a
+   page. The rule is ink rather than --colour-rule on purpose: this is a
+   structural division, not a hairline between list items. */
+.section-heading--ruled {
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--colour-ink);
+}
+
 /* ==========================================================================
    7. TABLES
    A table is a record, so it gets square corners, hairline rules and no

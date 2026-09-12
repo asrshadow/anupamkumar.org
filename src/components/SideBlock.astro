@@ -1,0 +1,73 @@
+---
+// ============================================================
+// SIDE BLOCK
+// One titled block inside a sidebar: a small label heading, and
+// whatever the page puts under it.
+//
+// This exists so that every block in every sidebar on the site is
+// spaced and set the same way, instead of each page inventing its
+// own version and the versions slowly drifting apart.
+//
+// HOW A PAGE USES IT
+//
+//   <SideBlock title="Tagged">
+//     <TagList tags={piece.tags} />
+//   </SideBlock>
+// ============================================================
+
+interface Props {
+  /** The words above the block. Kept short — it is a label. */
+  title: string;
+
+  /**
+   * Whether the title is an <h2> or an <h3>.
+   *
+   * This is not a style choice. Headings on a page must never skip
+   * a level, because someone using a screen reader navigates by
+   * them and a gap reads as missing content.
+   *
+   * On an article page the sidebar sits under the article's <h1>,
+   * so its blocks are <h2> — which is the default. Pass 3 only
+   * where the block genuinely sits underneath an <h2> already.
+   */
+  headingLevel?: 2 | 3;
+}
+
+const { title, headingLevel = 2 } = Astro.props;
+
+// Build the tag name from the level, so <Heading> below renders as
+// <h2> or <h3>. The capital letter matters: Astro treats a
+// lowercase name as a literal HTML tag and a capitalised one as a
+// value to look up.
+const Heading = `h${headingLevel}` as "h2" | "h3";
+---
+
+<div class="side-block">
+  <Heading class="section-heading">{title}</Heading>
+  <slot />
+</div>
+
+<style>
+  /* The spacing between blocks is set by the sidebar itself, in
+     PageShell, so that it stays even no matter which blocks a page
+     chooses to show. Nothing to do here. */
+  .side-block > :global(:last-child) {
+    margin-bottom: 0;
+  }
+
+  /* Lists in a sidebar are links, not bullet points. A bullet in a
+     column this narrow costs a character of width and adds nothing,
+     since the block already has a heading saying what the list is. */
+  .side-block :global(ul) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .side-block :global(p) {
+    margin: 0 0 var(--space-3);
+  }
+</style>
