@@ -99,6 +99,87 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     var area = document.querySelector(".search-area");
     if (area) area.hidden = true;
   }
+
+  // ============================================================
+  // CARRY A SEARCH TERM IN FROM THE HEADER
+  //
+  // The search box in the site header is a plain form. Pressing
+  // Enter in it sends the reader here, to /search/?q=whatever.
+  //
+  // Pagefind does not look at the address, so without this the
+  // reader would arrive at an empty search box having already
+  // typed their question once. This puts it in for them.
+  // ============================================================
+
+  // ------------------------------------------------------------
+  // STEP 1 — Is there a search term in the address?
+  // ------------------------------------------------------------
+  var searchTerm = new URLSearchParams(window.location.search).get("q");
+
+  // Nothing to do if the reader came here directly.
+  if (searchTerm) {
+    fillInTheSearchBox(searchTerm);
+  }
+
+  function fillInTheSearchBox(term) {
+    // ----------------------------------------------------------
+    // STEP 2 — Find the box Pagefind drew, once it has drawn it.
+    //
+    // Pagefind builds its own <input> after its code has loaded,
+    // so the box does not exist yet when this script first runs.
+    // There is no event announcing it, so the only option is to
+    // look every so often until it appears.
+    //
+    // GIVING UP MATTERS. If Pagefind never loads — no index built,
+    // a blocked file — checking forever would spin quietly in the
+    // background for as long as the page is open. After about two
+    // seconds this stops. The reader then sees an empty box, which
+    // is poor but not broken, and their term is still visible in
+    // the address bar.
+    // ----------------------------------------------------------
+    var attemptsLeft = 40; // 40 tries, 50ms apart, so about 2 seconds
+
+    var lookForTheBox = setInterval(function () {
+      var input = document.querySelector(".search-area input");
+
+      if (!input) {
+        attemptsLeft = attemptsLeft - 1;
+        if (attemptsLeft <= 0) clearInterval(lookForTheBox);
+        return;
+      }
+
+      clearInterval(lookForTheBox);
+
+      // --------------------------------------------------------
+      // STEP 3 — Put the term in it, and tell Pagefind it changed.
+      //
+      // This is the part that is not obvious. Setting input.value
+      // from a script puts the text on screen but makes nothing
+      // happen, because nothing is listening for an assignment.
+      //
+      // Pagefind is listening for the "input" event that a real
+      // person typing would cause. So the script has to raise that
+      // event itself. Without these two lines the term appears in
+      // the box and no results ever arrive.
+      // --------------------------------------------------------
+      input.value = term;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+
+      // Put the cursor at the end, so the reader can keep typing
+      // rather than having to click into the box first.
+      //
+      // The try/catch is not defensive padding: setSelectionRange
+      // throws outright on some kinds of input, and Pagefind could
+      // change which kind it draws. Losing the cursor position is
+      // not worth an error that stops the rest of the page.
+      input.focus();
+      try {
+        input.setSelectionRange(term.length, term.length);
+      } catch (error) {
+        // Cursor stays wherever the browser put it. Harmless.
+      }
+    }, 50);
+  }
 </script>
 
 <style>

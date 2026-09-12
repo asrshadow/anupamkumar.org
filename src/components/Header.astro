@@ -13,21 +13,61 @@ import ThemeToggle from "./ThemeToggle.astro";
 // the reader is on.
 const path = Astro.url.pathname;
 
-// The navigation. Adding a page means adding a line here.
-// Data and Tools are deliberately absent until they exist — a
-// navigation item leading to an empty page is worse than none.
+// ============================================================
+// THE NAVIGATION
+//
+// Adding a section means adding a line here and nothing else.
+//
+// "alsoMatches" lists extra addresses an item should light up
+// for. /notes/ and /tags/ are both part of the writing, so they
+// mark "Writings and Notes" as the current section even though
+// they are different addresses.
+//
+// A nav item MAY lead to a section with no entries yet, as long
+// as that page says plainly what is coming. It may never lead to
+// a 404 or to a page that is simply blank.
+//
+// Now, Contact and Search are deliberately not here. The first
+// two are in the footer; search is the box to the right of this
+// list, which is a better place for it than a word in a row of
+// words.
+// ============================================================
 const links = [
-  { href: "/writing/", label: "Writing" },
-  { href: "/notes/", label: "Notes" },
+  { href: "/", label: "Home" },
+  {
+    href: "/writing/",
+    label: "Writings and Notes",
+    alsoMatches: ["/notes/", "/tags/"],
+  },
+  { href: "/datasets/", label: "Datasets" },
+  { href: "/tools/", label: "Tools" },
   { href: "/about/", label: "About" },
-  { href: "/now/", label: "Now" },
-  { href: "/search/", label: "Search" },
 ];
 
-// A link is "current" when the address starts with it. That way
-// /writing/some-essay/ still marks Writing as the current section.
-function isCurrent(href: string): boolean {
-  return path === href || path.startsWith(href);
+// ============================================================
+// WHICH SECTION IS THE READER IN?
+//
+// Home has to be handled separately, and this is not a detail.
+// Every address on the site starts with "/", so a plain
+// "does the address start with this link" test would mark Home as
+// the current section on every single page of the site. Home is
+// current only on the home page itself.
+//
+// Every other section is current when the address sits inside it,
+// so /writing/some-essay/ marks the writing section.
+// ============================================================
+interface NavLink {
+  href: string;
+  label: string;
+  alsoMatches?: string[];
+}
+
+function isCurrent(link: NavLink): boolean {
+  if (link.href === "/") return path === "/";
+
+  if (path === link.href || path.startsWith(link.href)) return true;
+
+  return (link.alsoMatches ?? []).some((prefix) => path.startsWith(prefix));
 }
 ---
 
@@ -44,8 +84,8 @@ function isCurrent(href: string): boolean {
             <li>
               <a
                 href={link.href}
-                class:list={["nav-link", { current: isCurrent(link.href) }]}
-                {...(isCurrent(link.href) ? { "aria-current": "page" } : {})}
+                class:list={["nav-link", { current: isCurrent(link) }]}
+                {...(isCurrent(link) ? { "aria-current": "page" } : {})}
               >
                 {link.label}
               </a>
@@ -54,6 +94,51 @@ function isCurrent(href: string): boolean {
         }
       </ul>
     </nav>
+
+    <!-- ============================================================
+         THE SEARCH BOX
+
+         A plain HTML form with no JavaScript behind it. A form with
+         method="get" makes the browser navigate to
+         /search/?q=whatever all by itself, which means searching
+         from here works even with JavaScript switched off, as far as
+         the search page itself.
+
+         The <label> is real, not a placeholder. A placeholder
+         disappears the moment someone types and is not announced
+         reliably by a screen reader, so it is not a label. This one
+         is hidden from sight and kept for screen readers.
+         ============================================================ -->
+    <form class="header-search" role="search" action="/search/" method="get">
+      <label for="site-search" class="visually-hidden">Search this site</label>
+
+      <input
+        type="search"
+        id="site-search"
+        name="q"
+        placeholder="Search…"
+        autocomplete="off"
+      />
+
+      <button type="submit" class="header-search-button">
+        <!-- The icon is decoration: the word beside it, hidden from
+             sight, is what a screen reader reads out. -->
+        <svg
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.5-3.5"></path>
+        </svg>
+        <span class="visually-hidden">Search</span>
+      </button>
+    </form>
 
     <ThemeToggle />
   </div>
@@ -131,7 +216,79 @@ function isCurrent(href: string): boolean {
     border-bottom-color: var(--colour-accent);
   }
 
-  /* On a phone the name goes on its own line above everything else. */
+  /* ---- The search box ---------------------------------------------------
+     Sits between the navigation and the theme toggle. */
+  .header-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+
+    /* Lets the form shrink inside the flex header instead of forcing
+       the header wider than the screen. Without this a flex item
+       refuses to go below its content width, and the search box is
+       the first thing this header has ever held that has one. */
+    min-width: 0;
+  }
+
+  .header-search input {
+    /* The border has to be --colour-border-input against the chrome
+       band. That pair measures 3.65:1 in light and 3.24:1 in dark,
+       which clears the 3:1 minimum for the boundary of a control —
+       and it is the tightest contrast on the whole band. */
+    border: 1px solid var(--colour-border-input);
+    border-radius: var(--radius-control);
+    background: var(--colour-surface);
+    color: var(--colour-ink);
+
+    /* An interactive control gets softened corners; the band around
+       it stays square. Shape says what a thing is. */
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+
+    /* Shorter than the 44px of a button, because a text field is
+       aimed at rather than tapped, and a 44px field would tower over
+       the navigation beside it. Still well past the 24px floor. */
+    min-height: 34px;
+    padding: var(--space-1) var(--space-3);
+
+    /* Shrinkable, and small enough by default not to crowd the nav. */
+    min-width: 0;
+    width: 9rem;
+  }
+
+  .header-search input::placeholder {
+    color: var(--colour-ink-muted);
+    opacity: 1; /* Firefox fades placeholders by default. */
+  }
+
+  .header-search-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Overrides the site-wide 44px button height, to match the field
+       it sits beside. 34 by 34 is still above the 24px minimum. */
+    min-height: 34px;
+    min-width: 34px;
+    padding: 0;
+
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    color: var(--colour-ink-muted);
+    cursor: pointer;
+  }
+
+  .header-search-button:hover {
+    color: var(--colour-ink);
+    background: var(--colour-surface);
+    border-color: var(--colour-border-input);
+  }
+
+  /* On a phone the name goes on its own line above everything else,
+     and the search box takes a line of its own below the navigation.
+     flex-basis: 100% is what puts each on its own row — no extra
+     breakpoint is needed. */
   @media (max-width: 34rem) {
     .header-inner {
       gap: var(--space-3);
@@ -142,8 +299,42 @@ function isCurrent(href: string): boolean {
       margin-right: 0;
     }
 
+    /* The navigation takes a full row of its own, wrapping within
+       it. That pushes the search box onto the next row, where the
+       theme toggle can sit beside it.
+
+       Giving the search box a row to itself instead would leave the
+       toggle alone on a fourth row, and the header would take 43%
+       of a 640px phone screen before any writing appeared. Most
+       readers arrive here on a phone, so that is not a small cost. */
     .nav-list {
-      margin-right: auto;
+      flex-basis: 100%;
+      margin-right: 0;
+    }
+
+    .header-search {
+      /* Takes whatever the toggle leaves on the row.
+
+         The 0 at the end is load-bearing. With a basis of "auto" the
+         browser has to size the form from its contents, but the
+         input inside it is set to width: 100% of that same form —
+         a circular question. Browsers resolve it by assuming the
+         form is wide, which pushed the toggle onto a row of its own
+         at 320px. A basis of 0 means "start from nothing and grow
+         into the space left over", which has no such circularity.
+
+         No "order" property is used anywhere here — the elements are
+         already in this sequence in the HTML, and reordering them
+         with CSS would make what a sighted reader sees disagree with
+         what a keyboard tabs through. */
+      flex: 1 1 0;
+    }
+
+    .header-search input {
+      /* Fills whatever the toggle leaves, rather than sitting as a
+         fixed stub with dead space beside it. */
+      width: 100%;
+      flex: 1;
     }
   }
 </style>

@@ -173,6 +173,29 @@ a:hover {
   transform: translateY(0);
 }
 
+/* ---- Text for screen readers only ---------------------------------------
+   Hides text from sight while keeping it available to a screen reader.
+
+   USE THIS, NOT display: none OR visibility: hidden. Those two remove the
+   text from the accessibility tree as well as from the screen, which hides
+   it from exactly the people it is there for.
+
+   The clip-path does the hiding. Everything else stops the element having
+   any effect on layout: one pixel in size, no padding, no border, and
+   white-space: nowrap so a long label cannot be wrapped into a tall
+   invisible column that pushes the page around. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ==========================================================================
    5. RUNNING TEXT — THE READING MEASURE
    Anything inside .prose is an essay or a note: serif, larger, and capped

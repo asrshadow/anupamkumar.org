@@ -21,6 +21,21 @@ const year = new Date().getFullYear();
       </p>
     </div>
 
+    <!-- WHY THIS BLOCK EXISTS. Now, Contact and Search are not in
+         the main navigation. Without this block they would have no
+         link pointing at them anywhere on the site, and a page
+         nothing links to is a broken page even though its address
+         still resolves. -->
+    <div class="footer-block">
+      <h2 class="section-heading">This site</h2>
+      <ul class="footer-list">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/now/">Now</a></li>
+        <li><a href="/contact/">Contact</a></li>
+        <li><a href="/search/">Search</a></li>
+      </ul>
+    </div>
+
     <div class="footer-block">
       <h2 class="section-heading">Elsewhere</h2>
       <ul class="footer-list">
