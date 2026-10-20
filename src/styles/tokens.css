@@ -314,4 +314,10 @@
      because at 18rem it would otherwise start squeezing the reading
      column. See section 8.8 of CLAUDE.md.                                */
   --width-aside: 18rem;
+
+  /* A panel that slides in over the page from the side — the detail
+     panel in a tool. Wider than the aside because it is read rather
+     than scanned. On a phone it becomes a full-width bottom sheet
+     instead. Added 20 October 2026 for the Economics Nobel timeline. */
+  --width-panel: 28rem;
 }

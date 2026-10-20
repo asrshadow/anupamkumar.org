@@ -1,0 +1,215 @@
+---
+// ============================================================
+// TOOL FRAME
+// The shared wrapper every tool page sits inside (CLAUDE.md §10).
+//
+// WHAT IT DOES, SO THAT NO TOOL HAS TO
+//   1. The title, the summary and — unless the tool is stable — a
+//      status label ("beta", "draft"), in words.
+//   2. A banner if the tool has been retired, saying the page is
+//      kept so that links do not break.
+//   3. The small-screen card, for tools that genuinely cannot work
+//      on a phone (minViewport "lg"). Written as a handoff — what
+//      the tool does, and the data to download — never a refusal.
+//   4. A hidden error notice. If a tool's script fails, the script
+//      reveals this notice (it is marked data-tool-error) so the
+//      reader is told in plain words rather than left with a
+//      silently broken page.
+//   5. The provenance box, built from each dataset's dataset.json:
+//      where the data comes from, when it was retrieved, under what
+//      licence, and a link to download it.
+//
+// WHAT THE TOOL ITSELF PROVIDES
+// Everything inside the frame: passed in as the frame's content,
+// in the <slot /> below.
+// ============================================================
+
+import { getDataset, downloadPath, downloadFileName } from "../lib/datasets";
+import type { Tool } from "../lib/tools";
+import { formatDate } from "../lib/writing";
+
+interface Props {
+  tool: Tool;
+}
+
+const { tool } = Astro.props;
+
+// Look up each dataset the tool names. A tool naming a dataset that
+// does not exist stops the build: a provenance box with a hole in it
+// would quietly undo the point of having one.
+const datasets = tool.datasets.map((id) => {
+  const dataset = getDataset(id);
+  if (!dataset) {
+    throw new Error(
+      `The tool "${tool.id}" says it uses the dataset "${id}", but no\n` +
+        `  dataset.json has that id. Check the spelling in its tool.config.js.`,
+    );
+  }
+  return dataset;
+});
+
+// Only tools that genuinely need a wide screen get the card.
+const needsWideScreen = tool.minViewport === "lg";
+---
+
+<article class="tool-frame">
+  <header class="tool-header">
+    <p class="eyebrow"><a href="/tools/">Tools</a></p>
+    <h1>{tool.title}</h1>
+    {tool.status !== "stable" && <p class="status">{tool.status}</p>}
+    <p class="summary">{tool.summary}</p>
+  </header>
+
+  {
+    tool.status === "retired" && (
+      <p class="notice">
+        <strong>This tool has been retired.</strong> The page is kept so that links to it
+        keep working, and the data behind it is still downloadable below.
+      </p>
+    )
+  }
+
+  {
+    needsWideScreen && (
+      <div class="wide-screen-card">
+        <p>
+          <strong>{tool.title}</strong> needs a wider screen than this one to show
+          everything side by side. The data behind it is below, ready to download, and
+          the same address will open the full tool on a laptop.
+        </p>
+      </div>
+    )
+  }
+
+  <p class="notice" role="alert" data-tool-error hidden>
+    <strong>Something went wrong while starting this tool.</strong> The information is all
+    still on the page below, as a plain list. Reloading the page may fix it.
+  </p>
+
+  <div class:list={["tool-body", { "wide-only": needsWideScreen }]}>
+    <slot />
+  </div>
+
+  {
+    datasets.length > 0 && (
+      <aside class="provenance" aria-labelledby="provenance-heading">
+        <h2 id="provenance-heading" class="section-heading">
+          The data behind this tool
+        </h2>
+        <ul>
+          {datasets.map((dataset) => (
+            <li>
+              <a href={`/datasets/${dataset.id}/`}>{dataset.title}</a>.{" "}
+              {dataset.sources[0]?.publisher && <span>Source: {dataset.sources[0].publisher}. </span>}
+              {dataset.sources[0]?.retrieved && (
+                <span>Retrieved {formatDate(new Date(dataset.sources[0].retrieved))}. </span>
+              )}
+              <span>Licence: {dataset.licenses.map((licence) => licence.name).join("; ")}.</span>
+              <span class="downloads">
+                Download:{" "}
+                {dataset.resources.map((resource, index) => (
+                  <Fragment>
+                    {index > 0 && ", "}
+                    <a href={downloadPath(dataset, resource)} class="file-name" download>
+                      {downloadFileName(resource)}
+                    </a>
+                  </Fragment>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )
+  }
+</article>
+
+<style>
+  .tool-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-6);
+  }
+
+  .eyebrow {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+  }
+
+  .summary {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
+  }
+
+  /* A pill: a label about the tool, never mistaken for its data. */
+  .status {
+    display: inline-block;
+    margin: 0 0 var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--colour-warning);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colour-warning);
+  }
+
+  /* Banners: a 3px rail and a soft ground, never a saturated fill. */
+  .notice,
+  .wide-screen-card {
+    max-width: var(--measure);
+    margin: 0 0 var(--space-5);
+    padding: var(--space-4) var(--space-5);
+    border-left: 3px solid var(--colour-accent);
+    background: var(--colour-accent-soft);
+    border-radius: 0 var(--radius-data) var(--radius-data) 0;
+    line-height: var(--leading-body);
+  }
+
+  .wide-screen-card p {
+    margin: 0;
+  }
+
+  /* The wide-screen card shows only on narrow screens, and the tool
+     only on wide ones. Used only by tools with minViewport "lg". */
+  @media (min-width: 64rem) {
+    .wide-screen-card {
+      display: none;
+    }
+  }
+
+  @media (max-width: 63.999rem) {
+    .wide-only {
+      display: none;
+    }
+  }
+
+  .provenance {
+    max-width: var(--measure);
+    margin-top: var(--space-8);
+    padding: var(--space-4) var(--space-5);
+    border-left: 3px solid var(--colour-accent);
+    background: var(--colour-accent-soft);
+    border-radius: 0 var(--radius-data) var(--radius-data) 0;
+    font-size: var(--size-sm);
+    line-height: var(--leading-body);
+  }
+
+  .provenance ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .downloads {
+    display: block;
+    margin-top: var(--space-2);
+  }
+
+  .file-name {
+    font-family: var(--font-mono);
+  }
+</style>

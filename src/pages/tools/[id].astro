@@ -1,0 +1,65 @@
+---
+// ============================================================
+// /tools/<id>/ — one page per tool.
+//
+// HOW A TOOL GETS ITS PAGE
+// Every folder in src/tools/ that has a tool.config.js gets a page
+// at /tools/<folder name>/. The page is the shared ToolFrame (title,
+// status, provenance box) wrapped around the tool's own Tool.astro.
+//
+// WHY THIS DOES NOT BREAK THE ONE-WAY RULE
+// The site never imports a particular tool. It asks the build tool
+// to FIND whatever Tool.astro files exist (import.meta.glob below),
+// the same way src/lib/tools.ts finds the config files. Delete a
+// tool's folder and it simply is not found: no page is made for it,
+// and the build still succeeds. Nothing outside the folder names it.
+//
+// RETIRED TOOLS KEEP THEIR PAGES, so published links never break.
+// They drop out of the /tools/ list, but this page still exists,
+// with a banner saying the tool is retired.
+// ============================================================
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ToolFrame from "../../components/ToolFrame.astro";
+import { getAllTools, type Tool } from "../../lib/tools";
+
+// Find every tool's main component. eager: true means load them all
+// now, at build time. When src/tools/ is empty this is an empty
+// object and no tool pages are made.
+const toolComponents = import.meta.glob<{ default: unknown }>("../../tools/*/Tool.astro", {
+  eager: true,
+});
+
+// ============================================================
+// STEP 1 — One page for every tool, retired ones included
+// ============================================================
+
+export function getStaticPaths() {
+  return getAllTools().map((tool) => ({ params: { id: tool.id }, props: { tool } }));
+}
+
+const { tool } = Astro.props as { tool: Tool };
+
+// ============================================================
+// STEP 2 — Find this tool's own component
+// A tool folder with a config but no Tool.astro is unfinished.
+// Stop and say so, rather than publish an empty page.
+// ============================================================
+
+const toolModule = toolComponents[`../../tools/${tool.id}/Tool.astro`];
+
+if (!toolModule) {
+  throw new Error(
+    `src/tools/${tool.id}/ has a tool.config.js but no Tool.astro, so the build stopped.\n` +
+      `  Every tool needs a Tool.astro — it is what appears on the tool's page.`,
+  );
+}
+
+const ToolBody = toolModule.default as typeof ToolFrame;
+---
+
+<BaseLayout title={tool.title} description={tool.summary}>
+  <ToolFrame tool={tool}>
+    <ToolBody />
+  </ToolFrame>
+</BaseLayout>
