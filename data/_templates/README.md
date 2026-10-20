@@ -12,16 +12,17 @@ It must never carry a list of columns that a new dataset is expected to have. Th
 global column vocabulary in this project and there never will be — each dataset declares
 its own columns, in its own words, with its own units.
 
-## What will live here
+## What lives here
 
-- `dataset.json` with the administrative fields filled in as blanks and commented
-- A skeleton `SOURCES.md`
-- A skeleton `CHANGELOG.md`
-- A skeleton `README.md` following the seven-point structure used everywhere in this
-  repository
+Written on 20 October 2026 from the first real dataset,
+`international/nobelprize-economic-sciences`, which is also the best worked example to copy.
 
-These get written when the first real dataset is added, not before, so that they describe
-something that actually worked rather than something imagined.
+- `dataset.json`: the administrative fields, with each blank saying what goes in it. The site
+  skips this folder, so the template never appears as a dataset.
+- `SOURCES.md`: a skeleton.
+- `CHANGELOG.md`: a skeleton.
+- `README-template.md`: a skeleton following the seven-point structure used everywhere in this
+  repository. Rename it `README.md` when you copy it.
 
 ## The four files every dataset needs
 
@@ -45,4 +46,4 @@ Do not copy an empty `build/` folder, a placeholder script, or a `METHOD.md` wit
 in it. A tiny series that needed no cleaning is complete with four files, and pretending
 otherwise teaches the next dataset to be more complicated than it needs to be.
 
-**Last updated:** 11 September 2026
+**Last updated:** 20 October 2026

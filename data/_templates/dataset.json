@@ -1,0 +1,29 @@
+{
+  "id": "GROUP/FOLDER-NAME — must match where the folder sits, e.g. international/nobelprize-economic-sciences",
+  "title": "What a reader would call it, with the years it covers",
+  "description": "One paragraph a non-specialist can understand: what it is, who published it, what one row is.",
+  "keywords": ["topic-one", "topic-two"],
+  "sources": [
+    {
+      "title": "The exact name of the table, statement or API",
+      "publisher": "Who published it",
+      "url": "The direct address of the file you downloaded",
+      "retrieved": "YYYY-MM-DD"
+    }
+  ],
+  "licenses": [
+    { "name": "The licence of this specific product, e.g. GODL-India or CC BY 4.0", "url": "Where the licence is stated" }
+  ],
+  "updated": "YYYY-MM-DD",
+  "stale_after_months": 13,
+  "resources": [
+    {
+      "name": "short-name",
+      "path": "clean/file_name.csv",
+      "rows": 0,
+      "fields": [
+        { "name": "column_name", "type": "integer | number | string | date", "description": "What it means, AND its unit. Every column in the file, and nothing that is not." }
+      ]
+    }
+  ]
+}
