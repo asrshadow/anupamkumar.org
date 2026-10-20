@@ -17,6 +17,8 @@ import SideBlock from "../components/SideBlock.astro";
 import FeaturedPiece from "../components/FeaturedPiece.astro";
 import PieceCard from "../components/PieceCard.astro";
 import { getAllWriting, getAllTags, displayTag } from "../lib/writing";
+import { getDatasets } from "../lib/datasets";
+import { getTools } from "../lib/tools";
 
 const everything = await getAllWriting();
 
@@ -30,6 +32,17 @@ const alsoRecent = everything.slice(1, 5);
 // will be forty entries long in two years, and a sidebar cannot
 // hold forty. The full list is on /writing/.
 const topTags = (await getAllTags()).slice(0, 8);
+
+// The newest datasets and tools, for the sidebar. Read from the same
+// lists the /datasets/ and /tools/ pages use, so a new dataset or
+// tool appears here by itself — there is nothing to edit on this
+// page when one is added. THREE of each at most: the sidebar points
+// to the sections; it does not replace them.
+//
+// Only the tools' config files are read (see src/lib/tools.ts), so
+// the home page still builds if every tool is deleted (rule 5).
+const latestDatasets = getDatasets().slice(0, 3);
+const latestTools = getTools().slice(0, 3);
 ---
 
 <BaseLayout
@@ -93,12 +106,29 @@ const topTags = (await getAllTags()).slice(0, 8);
     <Fragment slot="aside">
       <SideBlock title="Datasets">
         <p>
-          Cleaned Indian public finance data, each one carrying its source, the
-          date it was retrieved, and every column described with its unit.
+          Cleaned data, each dataset carrying its source, the date it was
+          retrieved, and every column described with its unit.
         </p>
-        <p>
-          <a href="/datasets/">Nothing published yet — what is coming</a>
-        </p>
+        {
+          latestDatasets.length > 0 ? (
+            <>
+              <ul>
+                {latestDatasets.map((dataset) => (
+                  <li>
+                    <a href={`/datasets/${dataset.id}/`}>{dataset.title}</a>
+                  </li>
+                ))}
+              </ul>
+              <p class="see-section">
+                <a href="/datasets/">All datasets</a>
+              </p>
+            </>
+          ) : (
+            <p>
+              <a href="/datasets/">Nothing published yet — what is coming</a>
+            </p>
+          )
+        }
       </SideBlock>
 
       <SideBlock title="Tools">
@@ -106,9 +136,26 @@ const topTags = (await getAllTags()).slice(0, 8);
           Small interactive things that run entirely in your browser. Nothing
           you open is sent anywhere, because there is no server to send it to.
         </p>
-        <p>
-          <a href="/tools/">Nothing published yet — what is coming</a>
-        </p>
+        {
+          latestTools.length > 0 ? (
+            <>
+              <ul>
+                {latestTools.map((tool) => (
+                  <li>
+                    <a href={`/tools/${tool.id}/`}>{tool.title}</a>
+                  </li>
+                ))}
+              </ul>
+              <p class="see-section">
+                <a href="/tools/">All tools</a>
+              </p>
+            </>
+          ) : (
+            <p>
+              <a href="/tools/">Nothing published yet — what is coming</a>
+            </p>
+          )
+        }
       </SideBlock>
 
       {
@@ -174,7 +221,8 @@ const topTags = (await getAllTags()).slice(0, 8);
      margin on every paragraph inside it, and that rule is more
      specific than a single class here, so a simpler selector loses
      and the link ends up jammed against the last subject. */
-  .tag-links + .more-subjects {
+  .tag-links + .more-subjects,
+  ul + .see-section {
     margin-top: var(--space-4);
   }
 </style>
