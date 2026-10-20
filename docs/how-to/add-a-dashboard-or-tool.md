@@ -106,16 +106,27 @@ one that decays.
 
 ---
 
-## Not built yet
+## What the site already does for a tool
 
-`ToolFrame` — the shared wrapper that gives every tool its title, its provenance box, its
-download link, its status badge, its small-screen card and its lazy loading — is specified
-in `CLAUDE.md` §10 but has not been built.
+`ToolFrame` (`src/components/ToolFrame.astro`) was built on 20 October 2026 alongside the
+first tool. It is the shared wrapper around every tool page, and it provides:
 
-It gets built alongside the **first real tool**, not before. A frame written against no tool
-would be wrong about the thing that matters most, which is where the boundary between the
-frame and the tool falls.
+- the title, the summary and the status label
+- the provenance box, built from each dataset's `dataset.json`, with download links
+- the retired-tool banner
+- the small-screen card for tools set to `minViewport: "lg"`
+- a hidden error notice, which a tool's script reveals if it fails
+
+Each tool gets its page at `/tools/<folder name>/` automatically. The page is
+`src/pages/tools/[id].astro`, and it finds every `Tool.astro` in `src/tools/` by itself.
+
+**The worked example to copy** is `src/tools/nobel-economics-timeline/`. Its design is worth
+copying too: the build writes the whole content into the page as plain HTML, and the script
+only adds interaction on top. Without JavaScript the page still works, and if the script
+fails, nothing is lost.
+
+A tool folder needs four files: `tool.config.js`, `Tool.astro`, its script, and `README.md`.
 
 ---
 
-**Last updated:** 12 September 2026
+**Last updated:** 20 October 2026

@@ -2,10 +2,10 @@
 
 One folder per interactive tool, each fully self-contained.
 
-**There are no tools yet.** The first two are planned for months six to nine, after the
-writing and the data layer exist. Building tools before there is anything to write about is
-the most reliable way for a project like this to die as a portfolio of unfinished
-experiments.
+**One tool so far:** `nobel-economics-timeline/`, added on 20 October 2026. It is the worked
+example to copy. Keep the rule this folder started with: a tool exists to explain something
+published here — writing or a dataset. Tools built ahead of anything to write about are how a
+project like this dies as a portfolio of unfinished experiments.
 
 ---
 
@@ -65,8 +65,12 @@ dataset's `dataset.json`, the download link for the underlying data, the status 
 small-screen card driven by `minViewport`, an error boundary so a broken tool cannot take
 down the page, and lazy loading.
 
-**ToolFrame will be built together with the first tool**, not before. A frame designed
-without a real tool to hold is guesswork.
+ToolFrame lives at `src/components/ToolFrame.astro` and was built with the first tool. Each
+tool's page is made by `src/pages/tools/[id].astro`, which finds every `Tool.astro` in this
+folder by itself, so nothing outside a tool's folder ever names it.
+
+**What a tool folder holds:** `tool.config.js`, `Tool.astro` (what appears on the page), the
+tool's script, and `README.md`.
 
 ---
 
@@ -111,4 +115,4 @@ accumulates and one that decays.
 Following the structure used everywhere here: what it does, how to run it, what it reads
 and writes, dependencies, how to change the common things, known limitations, last updated.
 
-**Last updated:** 11 September 2026
+**Last updated:** 20 October 2026

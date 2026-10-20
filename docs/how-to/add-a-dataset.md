@@ -1,13 +1,14 @@
 # How to add a dataset
 
-**No code, once the detail page exists.**
+**No code.** Folders and files only.
 
-Today this still needs one build session: `/datasets/<id>/` and the endpoint that serves
-each dataset's files have not been built yet. That is deliberate. A detail page designed
-against zero real datasets would fit the first one badly and the second one worse, and it
-would have set a precedent by then. It gets built alongside the first real dataset.
+The dataset page at `/datasets/<group>/<name>/` and the download address for each file were
+built on 20 October 2026, alongside the first real dataset. A new dataset gets both by
+existing: there is nothing to register and no list to update.
 
-**After that session, this is folders and files and no code at all.**
+**The worked example to copy** is `data/international/nobelprize-economic-sciences/`. It is a
+multi-table release with a short build chain. Most datasets will need less than it has. The
+blank starting files are in `data/_templates/`.
 
 The same text is §17.2 of `CLAUDE.md`. The fuller reasoning is in §6.
 
@@ -125,4 +126,4 @@ All of these are meant to happen, and all of them say what to fix.
 
 ---
 
-**Last updated:** 12 September 2026
+**Last updated:** 20 October 2026
