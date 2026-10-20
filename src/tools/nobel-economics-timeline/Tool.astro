@@ -1,0 +1,799 @@
+---
+// ============================================================
+// ECONOMICS NOBEL TIMELINE — what appears on the tool's page
+//
+// WHAT THIS FILE DOES
+// At build time it reads the published dataset (laureates.csv and
+// prizes.csv) and this folder's explainers.md, and writes out the
+// WHOLE timeline as ordinary HTML: every decade, every year, every
+// laureate, every citation and every explainer.
+//
+// WHY EVERYTHING IS WRITTEN INTO THE PAGE
+// So the page is complete before any JavaScript runs. A reader with
+// JavaScript switched off, a screen reader, a search engine and the
+// site's own search all get the full list. tool.js then adds the two
+// interactions on top: pulling the timeline in and out, and the
+// panel that slides in when a name is chosen. If tool.js ever fails,
+// the plain list is still there.
+//
+// WHAT tool.js NEEDS FROM THIS PAGE
+//   - data-nobel on the outer box, so it knows where the tool is.
+//   - Elements marked "only-with-script" start hidden, and tool.js
+//     shows them. Elements marked "only-without-script" start
+//     visible, and tool.js hides them.
+//   - Each name button carries data-laureate-id, the Nobel
+//     Foundation's own id for the person.
+//   - The details shown in the panel are in a block of JSON near the
+//     end (data-laureates), worked out here so the browser does not
+//     have to.
+// ============================================================
+
+import { getDataset, resourceFile } from "../../lib/datasets";
+import { readCsv, type CsvRow } from "../../lib/csv";
+import { formatDate } from "../../lib/writing";
+
+// The plain-English explainers, read as text. "?raw" tells the build
+// tool to hand over the file's contents rather than turn it into a
+// page of its own.
+import explainersText from "./explainers.md?raw";
+
+// The one dataset this tool reads. It is a published dataset in its
+// own right, so every figure here can be checked without the tool.
+const DATASET_ID = "international/nobelprize-economic-sciences";
+
+// ============================================================
+// STEP 1 — Read the two tables from the published dataset
+// ============================================================
+
+const dataset = getDataset(DATASET_ID);
+if (!dataset) {
+  throw new Error(`The Nobel timeline needs the dataset "${DATASET_ID}", which was not found in data/.`);
+}
+
+function readResource(name: string): CsvRow[] {
+  const resource = dataset!.resources.find((item) => item.name === name);
+  if (!resource) {
+    throw new Error(`The dataset "${DATASET_ID}" has no resource called "${name}".`);
+  }
+  return readCsv(resourceFile(dataset!, resource));
+}
+
+const laureateRows = readResource("laureates");
+const prizeRows = readResource("prizes");
+
+// The date each prize was announced, by year — used to work out how
+// old each laureate was on the day.
+const dateAwardedByYear = new Map<number, string>();
+for (const prize of prizeRows) {
+  dateAwardedByYear.set(Number(prize.award_year), prize.date_awarded);
+}
+
+// ============================================================
+// STEP 2 — Read the explainers
+//
+// explainers.md has a heading line "## 1969" before each year's
+// text. Splitting on those lines gives, in turn: the note at the
+// top (ignored), a year, its text, the next year, its text, and so
+// on. Blank lines inside a year's text separate its paragraphs.
+// ============================================================
+
+const explainersByYear = new Map<number, string[]>();
+const pieces = explainersText.split(/^## (\d{4})\s*$/m);
+
+for (let index = 1; index < pieces.length; index += 2) {
+  const year = Number(pieces[index]);
+  const paragraphs = pieces[index + 1]
+    .trim()
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
+    .filter((paragraph) => paragraph.length > 0);
+  explainersByYear.set(year, paragraphs);
+}
+
+// ============================================================
+// STEP 3 — Turn each row into what the page shows
+// ============================================================
+
+// The share of the prize, in words rather than as a fraction.
+const SHARE_IN_WORDS: Record<string, string> = {
+  "1": "The whole prize",
+  "1/2": "One half of the prize",
+  "1/3": "One third of the prize",
+  "1/4": "One quarter of the prize",
+};
+
+// Age on the day the prize was announced. Where the source gives
+// only a birth year, the age can only be approximate, and says so.
+function ageAtAward(row: CsvRow): string {
+  const awarded = dateAwardedByYear.get(Number(row.award_year));
+  if (!row.birth_date || !awarded) {
+    return `about ${Number(row.award_year) - Number(row.birth_year)}`;
+  }
+
+  const birth = new Date(row.birth_date);
+  const award = new Date(awarded);
+  let age = award.getUTCFullYear() - birth.getUTCFullYear();
+
+  // Not yet had that year's birthday when the prize was announced.
+  const birthdayStillToCome =
+    award.getUTCMonth() < birth.getUTCMonth() ||
+    (award.getUTCMonth() === birth.getUTCMonth() && award.getUTCDate() < birth.getUTCDate());
+  if (birthdayStillToCome) age -= 1;
+
+  return String(age);
+}
+
+// "3 March 1895, Oslo, Norway". Where the country has changed name
+// since, the present one is added: "…, Russian Empire (now Belarus)".
+function bornText(row: CsvRow): string {
+  const when = row.birth_date ? formatDate(new Date(row.birth_date)) : row.birth_year;
+  const placeParts = [row.birth_city, row.birth_country].filter(Boolean);
+  let text = [when, ...placeParts].join(", ");
+  if (row.birth_country_now && row.birth_country_now !== row.birth_country) {
+    text += ` (now ${row.birth_country_now})`;
+  }
+  return text;
+}
+
+interface Laureate {
+  id: string;
+  year: number;
+  name: string;
+  fullName: string;
+  share: string;
+  motivation: string;
+  affiliation: string;
+  born: string;
+  died: string;
+  age: string;
+  factsUrl: string;
+  wikipediaUrl: string;
+  sharedWith: string[];
+}
+
+const laureates: Laureate[] = laureateRows.map((row) => ({
+  id: row.laureate_id,
+  year: Number(row.award_year),
+  name: row.known_name,
+  fullName: row.full_name,
+  share: SHARE_IN_WORDS[row.prize_share] ?? row.prize_share,
+  motivation: row.motivation,
+  affiliation: row.affiliation_at_award,
+  born: bornText(row),
+  died: row.death_date ? formatDate(new Date(row.death_date)) : "",
+  age: ageAtAward(row),
+  factsUrl: row.nobel_facts_url,
+  wikipediaUrl: row.wikipedia_url,
+  // The ids of everyone else awarded that year.
+  sharedWith: laureateRows
+    .filter((other) => other.award_year === row.award_year && other.laureate_id !== row.laureate_id)
+    .map((other) => other.laureate_id),
+}));
+
+// ============================================================
+// STEP 4 — Group the laureates into years, and years into decades
+// ============================================================
+
+interface Year {
+  year: number;
+  laureates: Laureate[];
+  // Each different citation that year, with who it was for. Most
+  // years have one citation shared by everyone.
+  citations: { text: string; names: string[] }[];
+  explainer: string[];
+}
+
+interface Decade {
+  start: number;
+  years: Year[];
+  laureateCount: number;
+}
+
+const years: Year[] = [];
+for (const laureate of laureates) {
+  let year = years.find((item) => item.year === laureate.year);
+  if (!year) {
+    year = { year: laureate.year, laureates: [], citations: [], explainer: explainersByYear.get(laureate.year) ?? [] };
+    years.push(year);
+  }
+  year.laureates.push(laureate);
+
+  // Add this laureate's citation, or their name to an existing one.
+  const citation = year.citations.find((item) => item.text === laureate.motivation);
+  if (citation) citation.names.push(laureate.name);
+  else year.citations.push({ text: laureate.motivation, names: [laureate.name] });
+}
+
+const decades: Decade[] = [];
+for (const year of years) {
+  const start = Math.floor(year.year / 10) * 10;
+  let decade = decades.find((item) => item.start === start);
+  if (!decade) {
+    decade = { start, years: [], laureateCount: 0 };
+    decades.push(decade);
+  }
+  decade.years.push(year);
+  decade.laureateCount += year.laureates.length;
+}
+
+// "1 prize" / "10 prizes", so counts always read correctly.
+function count(number: number, singular: string, plural: string): string {
+  return `${number} ${number === 1 ? singular : plural}`;
+}
+
+// The panel's data, as JSON. The "<" swap stops a "</script>" inside
+// any text from ending the block early.
+const laureatesJson = JSON.stringify(laureates).replace(/</g, "\\u003c");
+
+const firstYear = years[0]?.year;
+const lastYear = years[years.length - 1]?.year;
+---
+
+<div class="nobel" data-nobel>
+  <p class="intro">
+    {count(years.length, "prize", "prizes")} and {count(laureates.length, "laureate", "laureates")},
+    {firstYear} to {lastYear}.
+    <span class="only-with-script" hidden>
+      Pull out to see every decade at once, or pull in to see one decade year by year. Choose
+      any name to read about that person and their work.
+    </span>
+  </p>
+
+  <!-- The controls exist only once tool.js is running, because
+       without it they would do nothing. -->
+  <div class="controls only-with-script" hidden>
+    <div class="zoom" role="group" aria-label="How much of the timeline to show">
+      <button type="button" data-show="decades" aria-pressed="true">All decades</button>
+      <button type="button" data-show="years" aria-pressed="false">Year by year</button>
+    </div>
+
+    <div class="decade-picker" role="group" aria-label="Which decade to show year by year">
+      {
+        decades.map((decade) => (
+          <button type="button" data-decade-choice={decade.start} aria-pressed="false">
+            {decade.start}s
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- Read aloud by screen readers whenever the view changes. -->
+  <p class="visually-hidden" aria-live="polite" data-announce></p>
+
+  <ol class="decades">
+    {
+      decades.map((decade) => (
+        <li class="decade" data-decade={decade.start}>
+          <h2 class="decade-heading">
+            {decade.start}s
+            <span class="decade-count">
+              {count(decade.years.length, "prize", "prizes")},{" "}
+              {count(decade.laureateCount, "laureate", "laureates")}
+            </span>
+          </h2>
+
+          {/* The compact list of names, for the "All decades" view. */}
+          <ul class="decade-names only-with-script" hidden>
+            {decade.years.map((year) =>
+              year.laureates.map((laureate) => (
+                <li>
+                  <button type="button" class="name-button" data-laureate-id={laureate.id}>
+                    <span class="name">{laureate.name}</span>
+                    <span class="name-year">{year.year}</span>
+                  </button>
+                </li>
+              )),
+            )}
+          </ul>
+
+          <button type="button" class="pull-in only-with-script" data-pull-in={decade.start} hidden>
+            Pull in: the {decade.start}s year by year
+          </button>
+
+          {/* The full year-by-year list. */}
+          <ol class="years">
+            {decade.years.map((year) => (
+              <li class="year" id={`year-${year.year}`}>
+                <h3 class="year-heading">{year.year}</h3>
+
+                <ul class="year-laureates">
+                  {year.laureates.map((laureate) => (
+                    <li>
+                      <button type="button" class="name-button only-with-script" data-laureate-id={laureate.id} hidden>
+                        <span class="name">{laureate.name}</span>
+                      </button>
+                      <span class="name only-without-script">{laureate.name}</span>
+                      {laureate.affiliation && (
+                        <span class="affiliation">{laureate.affiliation}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+
+                {year.citations.map((citation) => (
+                  <p class="citation">
+                    {year.citations.length > 1 && <span class="citation-names">{citation.names.join(" and ")}: </span>}
+                    “{citation.text}”
+                  </p>
+                ))}
+
+                {year.explainer.length > 0 && (
+                  <div class="explainer" data-explainer={year.year}>
+                    <p class="explainer-label">In plain English — written for this site</p>
+                    {year.explainer.map((paragraph) => <p>{paragraph}</p>)}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </li>
+      ))
+    }
+  </ol>
+
+  <!-- The panel that slides in when a name is chosen. Empty here;
+       tool.js fills it in for whichever laureate was chosen. A native
+       <dialog> keeps keyboard focus inside it while open and closes
+       on the Escape key, without any extra code. -->
+  <dialog class="panel" aria-labelledby="panel-name" data-panel>
+    <div class="panel-top">
+      <p class="panel-kicker" data-field="kicker"></p>
+      <button type="button" class="panel-close" data-close>Close</button>
+    </div>
+
+    <h2 id="panel-name" class="panel-name" data-field="name"></h2>
+    <p class="panel-full-name" data-field="full-name"></p>
+    <p class="panel-share" data-field="share"></p>
+
+    <blockquote class="panel-citation">
+      <p data-field="motivation"></p>
+      <footer>The Nobel committee's citation</footer>
+    </blockquote>
+
+    <dl class="panel-facts">
+      <div data-row="affiliation"><dt>Where they worked when awarded</dt><dd data-field="affiliation"></dd></div>
+      <div data-row="born"><dt>Born</dt><dd data-field="born"></dd></div>
+      <div data-row="died"><dt>Died</dt><dd data-field="died"></dd></div>
+      <div data-row="age"><dt>Age when awarded</dt><dd data-field="age"></dd></div>
+    </dl>
+
+    <section data-row="shared">
+      <h3 class="panel-subheading">Shared the prize with</h3>
+      <ul class="panel-shared" data-field="shared"></ul>
+    </section>
+
+    <section data-row="explainer">
+      <h3 class="panel-subheading">The work, in plain English</h3>
+      <div class="panel-explainer" data-field="explainer"></div>
+      <p class="panel-note">Written for this site. The citation above is the Nobel committee's own.</p>
+    </section>
+
+    <ul class="panel-links">
+      <li><a data-field="facts-link" href="#">Nobel Prize facts page</a></li>
+      <li><a data-field="wikipedia-link" href="#">Wikipedia article</a></li>
+    </ul>
+
+    <div class="panel-steps">
+      <button type="button" data-step="-1">← Previous laureate</button>
+      <button type="button" data-step="1">Next laureate →</button>
+    </div>
+  </dialog>
+
+  <script type="application/json" data-laureates set:html={laureatesJson} />
+</div>
+
+<script>
+  // The interactive layer. Astro bundles it into the page as one
+  // small file; see tool.js for what it does, step by step.
+  import "./tool.js";
+</script>
+
+<style>
+  /* ============================================================
+     THE TIMELINE — styles for this tool only. Every colour, size,
+     space and corner comes from a token in src/styles/tokens.css.
+     ============================================================ */
+
+  /* "hidden" must win over any display rule below, or an element
+     meant to be hidden until the script runs would show anyway. */
+  .nobel [hidden] {
+    display: none !important;
+  }
+
+  .intro {
+    max-width: var(--measure);
+    margin: 0 0 var(--space-5);
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+  }
+
+  /* ---- The controls ------------------------------------------ */
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    margin-bottom: var(--space-6);
+  }
+
+  .zoom,
+  .decade-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* The pressed button is shown by a filled ground AND bold text, so
+     the state is never carried by colour alone. */
+  .controls button[aria-pressed="true"] {
+    background: var(--colour-ink);
+    color: var(--colour-paper);
+    border-color: var(--colour-ink);
+    font-weight: 700;
+  }
+
+  /* The decade picker only makes sense when pulled in. */
+  .nobel[data-view="decades"] .decade-picker {
+    display: none;
+  }
+
+  /* ---- The decades ------------------------------------------- */
+
+  .decades {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-7);
+  }
+
+  .decade-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-4);
+    margin: 0 0 var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--colour-ink);
+    font-size: var(--size-xl);
+  }
+
+  .decade-count {
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    font-weight: 400;
+    color: var(--colour-ink-muted);
+  }
+
+  /* PULLED OUT: the decades side by side as a strip, each with its
+     names. Wraps onto more rows as the screen narrows, down to one
+     column on a phone. */
+  .nobel[data-view="decades"] .decades {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--width-aside)), 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+
+  .nobel[data-view="decades"] .years {
+    display: none;
+  }
+
+  /* PULLED IN: one decade, year by year. */
+  .nobel[data-view="years"] .decade:not(.is-current),
+  .nobel[data-view="years"] .decade-names,
+  .nobel[data-view="years"] .pull-in {
+    display: none;
+  }
+
+  .decade-names {
+    list-style: none;
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* ---- Name buttons ------------------------------------------ */
+
+  .name-button {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    text-align: left;
+  }
+
+  .name-button .name {
+    font-weight: 600;
+  }
+
+  .name-year {
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+  }
+
+  .pull-in {
+    font-weight: 600;
+  }
+
+  /* ---- The years: a vertical line with a dot for each year --- */
+
+  .years {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 var(--space-5);
+    border-left: 2px solid var(--colour-rule);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .year {
+    position: relative;
+    max-width: var(--measure);
+  }
+
+  /* The dot on the line. A point on a timeline is a "dot" shape in
+     this site's vocabulary (§8.6). Decorative, so it is drawn by CSS
+     and never read aloud. */
+  .year::before {
+    content: "";
+    position: absolute;
+    left: calc(-1 * var(--space-5) - 7px);
+    top: var(--space-2);
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-dot);
+    background: var(--colour-ink-muted);
+    border: 2px solid var(--colour-paper);
+  }
+
+  .year-heading {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--size-lg);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .year-laureates {
+    list-style: none;
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .year-laureates li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .year-laureates .name.only-without-script {
+    font-weight: 600;
+  }
+
+  .affiliation {
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
+  .citation {
+    margin: 0 0 var(--space-3);
+    font-style: italic;
+    line-height: var(--leading-body);
+  }
+
+  .citation-names {
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .explainer {
+    line-height: var(--leading-body);
+  }
+
+  .explainer p {
+    margin: 0 0 var(--space-3);
+  }
+
+  .explainer-label {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+  }
+
+  /* ---- The panel that slides in ------------------------------
+     A side sheet on a wide screen, a bottom sheet on a phone. It is
+     the one floating thing on the page, so it is the one place the
+     floating shadow is used (§8.6). */
+
+  .panel {
+    box-sizing: border-box;
+    margin: 0 0 0 auto;
+    width: min(var(--width-panel), 100%);
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: var(--space-5);
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+    border: 0;
+    border-left: 1px solid var(--colour-rule);
+    background: var(--colour-surface);
+    color: var(--colour-ink);
+    box-shadow: var(--shadow-floating);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* The page behind is veiled in its own background colour, so the
+     panel stands forward in either theme without a new colour. */
+  .panel::backdrop {
+    background: var(--colour-paper);
+    opacity: 0.7;
+  }
+
+  .panel[open] {
+    animation: slide-in-from-side 200ms ease-out;
+  }
+
+  .panel.is-closing {
+    animation: slide-out-to-side 160ms ease-in forwards;
+  }
+
+  @keyframes slide-in-from-side {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+
+  @keyframes slide-out-to-side {
+    from { transform: translateX(0); }
+    to { transform: translateX(100%); }
+  }
+
+  /* On a phone the panel rises from the bottom instead. */
+  @media (max-width: 40rem) {
+    .panel {
+      margin: auto 0 0;
+      width: 100%;
+      height: auto;
+      max-height: 88dvh;
+      border-left: 0;
+      border-top: 1px solid var(--colour-rule);
+      border-radius: var(--radius-control) var(--radius-control) 0 0;
+    }
+
+    .panel[open] {
+      animation-name: slide-in-from-bottom;
+    }
+
+    .panel.is-closing {
+      animation-name: slide-out-to-bottom;
+    }
+  }
+
+  @keyframes slide-in-from-bottom {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  @keyframes slide-out-to-bottom {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+  }
+
+  .panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .panel-kicker {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
+  .panel-name {
+    margin: 0 0 var(--space-1);
+    font-size: var(--size-xl);
+  }
+
+  .panel-full-name,
+  .panel-share {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
+  .panel-citation {
+    margin: var(--space-4) 0;
+  }
+
+  .panel-citation p {
+    font-style: italic;
+  }
+
+  .panel-citation footer {
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+  }
+
+  .panel-facts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-5);
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+  }
+
+  .panel-facts dt {
+    font-size: var(--size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+  }
+
+  .panel-facts dd {
+    margin: 0;
+  }
+
+  .panel-subheading {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    font-weight: 700;
+  }
+
+  .panel section {
+    margin-bottom: var(--space-5);
+  }
+
+  .panel-shared {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .panel-explainer :global(p) {
+    margin: 0 0 var(--space-3);
+    line-height: var(--leading-body);
+  }
+
+  .panel-note {
+    margin: 0;
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+  }
+
+  .panel-links {
+    margin: 0 0 var(--space-5);
+    padding-left: var(--space-5);
+    line-height: var(--leading-body);
+  }
+
+  .panel-steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+</style>
