@@ -1,0 +1,465 @@
+---
+// ============================================================
+// /datasets/<group>/<name>/ — one page per published dataset.
+//
+// WHAT THIS PAGE IS FOR
+// It is what a person reads before using the data: what it is,
+// where it came from and when, under what licence, and what every
+// column means in what unit. Then the download.
+//
+// WHERE ITS CONTENT COMES FROM
+// Entirely from the dataset's own dataset.json and its clean files.
+// Nothing about any particular dataset is written in this file, so
+// a new dataset gets its page by being added to data/ — there is no
+// list to update.
+//
+// HOW EACH SECTION IS DECIDED
+//   - The staleness banner appears once stale_after_months passes.
+//   - "Derived" is shown for anything computed on this site, so a
+//     derived figure is never mistaken for a source figure (§6.7).
+//   - Each file gets its own columns table, written from "fields",
+//     and a preview of its first rows read from the file itself.
+//   - Tools that read this dataset are listed in the sidebar. Only
+//     their config files are read, so the one-way rule holds: the
+//     page still builds if every tool is deleted.
+// ============================================================
+
+import fs from "node:fs";
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import PageShell from "../../../../components/PageShell.astro";
+import SideBlock from "../../../../components/SideBlock.astro";
+import {
+  getDatasets,
+  downloadPath,
+  downloadFileName,
+  resourceFile,
+  type Dataset,
+} from "../../../../lib/datasets";
+import { getTools } from "../../../../lib/tools";
+import { readCsv } from "../../../../lib/csv";
+import { formatDate } from "../../../../lib/writing";
+
+// ============================================================
+// STEP 1 — One page for every dataset.json in data/
+// ============================================================
+
+export function getStaticPaths() {
+  return getDatasets().map((dataset) => ({
+    params: { group: dataset.group, name: dataset.id.split("/")[1] },
+    props: { dataset },
+  }));
+}
+
+const { dataset } = Astro.props as { dataset: Dataset };
+
+// How many rows of each file to show as a preview. Enough to see the
+// shape of the data; not so many that the page becomes the data.
+const PREVIEW_ROWS = 3;
+
+// Column types that hold figures, which are set in mono and aligned
+// right so the digits line up (§8.5).
+const NUMERIC_TYPES = ["integer", "number"];
+
+// ============================================================
+// STEP 2 — Gather what the page shows about each file
+// ============================================================
+
+const files = dataset.resources.map((resource) => {
+  const onDisk = resourceFile(dataset, resource);
+  const isCsv = onDisk.endsWith(".csv") && fs.existsSync(onDisk);
+
+  // The file size in kilobytes, so a reader on a phone knows what
+  // they are about to download before they tap.
+  const kilobytes = fs.existsSync(onDisk)
+    ? Math.max(1, Math.round(fs.statSync(onDisk).size / 1024))
+    : undefined;
+
+  // Which columns are figures, looked up by name.
+  const numericColumns = new Set(
+    (resource.fields ?? [])
+      .filter((field) => NUMERIC_TYPES.includes(field.type ?? ""))
+      .map((field) => field.name),
+  );
+
+  return {
+    resource,
+    fileName: downloadFileName(resource),
+    href: downloadPath(dataset, resource),
+    kilobytes,
+    numericColumns,
+    preview: isCsv ? readCsv(onDisk).slice(0, PREVIEW_ROWS) : [],
+  };
+});
+
+// The tools that read this dataset, for the sidebar.
+const toolsUsingThis = getTools().filter((tool) => tool.datasets.includes(dataset.id));
+
+// The date the source was retrieved, which every dataset page must
+// show (§6.10). Where sources differ, the earliest is the honest one.
+const retrievedDates = dataset.sources
+  .map((source) => source.retrieved)
+  .filter((date): date is string => Boolean(date))
+  .sort();
+const retrieved = retrievedDates[0] ?? dataset.updated;
+
+// A suggested citation, so that reusing the data correctly is the
+// easiest thing to do.
+const pageAddress = `https://anupamkumar.org/datasets/${dataset.id}/`;
+const updatedYear = dataset.updated.slice(0, 4);
+const publishers = [...new Set(dataset.sources.map((source) => source.publisher).filter(Boolean))];
+const citation =
+  `Anupam Kumar (${updatedYear}). ${dataset.title} [dataset], version of ` +
+  `${formatDate(new Date(dataset.updated))}. ${pageAddress}` +
+  (publishers.length > 0 ? ` Original data: ${publishers.join("; ")}.` : "");
+---
+
+<BaseLayout title={dataset.title} description={dataset.description}>
+  <PageShell asideLabel="About this dataset">
+    <header class="page-header">
+      <p class="eyebrow">
+        <a href="/datasets/">Datasets</a>
+        <span aria-hidden="true">/</span>
+        <span class="dataset-id">{dataset.id}</span>
+      </p>
+      <h1>{dataset.title}</h1>
+
+      {
+        /* §6.7: anything computed here is labelled as such, in words. */
+        dataset.derived && (
+          <p class="badge">Derived — computed on this site from other datasets</p>
+        )
+      }
+
+      <p class="page-intro">{dataset.description}</p>
+    </header>
+
+    {
+      /* The staleness banner carries words as well as a colour. */
+      dataset.isStale && (
+        <p class="stale">
+          <strong>Possibly out of date.</strong> This copy was retrieved on{" "}
+          {formatDate(new Date(retrieved))}, and the source may have published a newer
+          version since.
+        </p>
+      )
+    }
+
+    <dl class="facts">
+      <div>
+        <dt>Retrieved</dt>
+        <dd>{formatDate(new Date(retrieved))}</dd>
+      </div>
+      <div>
+        <dt>Last updated here</dt>
+        <dd>{formatDate(new Date(dataset.updated))}</dd>
+      </div>
+      {
+        dataset.totalRows !== undefined && (
+          <div>
+            <dt>Rows</dt>
+            <dd class="numeric">{dataset.totalRows.toLocaleString("en-IN")}</dd>
+          </div>
+        )
+      }
+      <div>
+        <dt>Licence</dt>
+        <dd>
+          {dataset.licenses.map((licence, index) => (
+            <Fragment>
+              {index > 0 && "; "}
+              {licence.url ? <a href={licence.url}>{licence.name}</a> : licence.name}
+            </Fragment>
+          ))}
+        </dd>
+      </div>
+    </dl>
+
+    <section aria-labelledby="download-heading">
+      <h2 id="download-heading">Download</h2>
+      <ul class="downloads">
+        {
+          files.map((file) => (
+            <li>
+              <a href={file.href} download>
+                {file.fileName}
+              </a>
+              <span class="download-facts">
+                {file.resource.rows !== undefined &&
+                  `${file.resource.rows.toLocaleString("en-IN")} rows`}
+                {file.kilobytes !== undefined && ` · ${file.kilobytes} KB`}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="note">
+        CSV, UTF-8, one header row. Opens in Excel, Python, R or any text editor.
+      </p>
+    </section>
+
+    <section aria-labelledby="sources-heading">
+      <h2 id="sources-heading">Where it comes from</h2>
+      <ul class="sources">
+        {
+          dataset.sources.map((source) => (
+            <li>
+              {source.url ? <a href={source.url}>{source.title}</a> : source.title}
+              {source.publisher && <span>, published by {source.publisher}</span>}
+              {source.retrieved && (
+                <span>. Retrieved {formatDate(new Date(source.retrieved))}.</span>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      files.map((file) => (
+        <section aria-labelledby={`columns-${file.resource.name}`}>
+          <h2 id={`columns-${file.resource.name}`}>
+            What is in <span class="file-name">{file.fileName}</span>
+          </h2>
+
+          {file.resource.fields && file.resource.fields.length > 0 && (
+            <div class="table-wrap" tabindex="0" role="region" aria-label={`Columns of ${file.fileName}, scrollable`}>
+              <table>
+                <caption>
+                  Every column in {file.fileName}, what it means, and its unit.
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Column</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Meaning and unit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {file.resource.fields.map((field) => (
+                    <tr>
+                      <th scope="row" class="column-name">{field.name}</th>
+                      <td>{field.type}</td>
+                      <td class="column-description">{field.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {file.preview.length > 0 && (
+            <div class="table-wrap" tabindex="0" role="region" aria-label={`First rows of ${file.fileName}, scrollable`}>
+              <table class="preview">
+                <caption>The first {file.preview.length} rows of {file.fileName}, exactly as in the file.</caption>
+                <thead>
+                  <tr>
+                    {Object.keys(file.preview[0]).map((column) => (
+                      <th scope="col" class:list={{ numeric: file.numericColumns.has(column) }}>{column}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {file.preview.map((row) => (
+                    <tr>
+                      {Object.entries(row).map(([column, value]) => (
+                        <td class:list={{ numeric: file.numericColumns.has(column) }}>{value}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      ))
+    }
+
+    <section aria-labelledby="cite-heading">
+      <h2 id="cite-heading">How to cite it</h2>
+      <p class="citation">{citation}</p>
+    </section>
+
+    <Fragment slot="aside">
+      {
+        toolsUsingThis.length > 0 && (
+          <SideBlock title="Explore it in a tool">
+            <ul>
+              {toolsUsingThis.map((tool) => (
+                <li>
+                  <a href={`/tools/${tool.id}/`}>{tool.title}</a>
+                </li>
+              ))}
+            </ul>
+          </SideBlock>
+        )
+      }
+
+      {
+        dataset.keywords.length > 0 && (
+          <SideBlock title="Subjects">
+            <ul>
+              {dataset.keywords.map((keyword) => (
+                <li>{keyword.replace(/-/g, " ")}</li>
+              ))}
+            </ul>
+          </SideBlock>
+        )
+      }
+
+      <SideBlock title="For machines">
+        <ul>
+          <li><a href="/registry.json">registry.json</a></li>
+        </ul>
+      </SideBlock>
+
+      <SideBlock title="All datasets">
+        <p><a href="/datasets/">Back to the datasets</a></p>
+      </SideBlock>
+    </Fragment>
+  </PageShell>
+</BaseLayout>
+
+<style>
+  .page-header {
+    max-width: var(--measure);
+    margin-bottom: var(--space-5);
+  }
+
+  .eyebrow {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* Ids and file names are machine-readable text, so they are mono —
+     the same signal as figures and code (§8.1). */
+  .dataset-id,
+  .file-name,
+  .column-name {
+    font-family: var(--font-mono);
+    overflow-wrap: anywhere;
+  }
+
+  .page-intro {
+    margin: 0;
+    color: var(--colour-ink-muted);
+    line-height: var(--leading-body);
+    text-wrap: pretty;
+  }
+
+  /* A pill, because it is a label about the dataset (§8.6). */
+  .badge {
+    display: inline-block;
+    margin: 0 0 var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--colour-rule);
+    border-radius: var(--radius-pill);
+    background: var(--colour-surface-sunk);
+    font-family: var(--font-sans);
+    font-size: var(--size-xs);
+    color: var(--colour-ink-muted);
+  }
+
+  .stale {
+    max-width: var(--measure);
+    margin: 0 0 var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    border-left: 3px solid var(--colour-warning);
+    background: var(--colour-surface-sunk);
+    font-size: var(--size-sm);
+    color: var(--colour-ink);
+  }
+
+  /* The facts, as a definition list: each label names the value
+     under it, which is what a screen reader announces. */
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    margin: 0 0 var(--space-6);
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+  }
+
+  .facts dt {
+    font-size: var(--size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--colour-ink-muted);
+  }
+
+  .facts dd {
+    margin: 0;
+    color: var(--colour-ink);
+  }
+
+  section {
+    margin-bottom: var(--space-7);
+  }
+
+  section h2 {
+    font-size: var(--size-xl);
+    margin: 0 0 var(--space-4);
+  }
+
+  .downloads,
+  .sources {
+    margin: 0 0 var(--space-3);
+    padding-left: var(--space-5);
+    line-height: var(--leading-body);
+    max-width: var(--measure);
+  }
+
+  .downloads a {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  .download-facts {
+    margin-left: var(--space-2);
+    font-family: var(--font-sans);
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
+  .note {
+    margin: 0;
+    font-size: var(--size-sm);
+    color: var(--colour-ink-muted);
+  }
+
+  /* The column names are row headers but read as data, so they keep
+     ordinary weight and colour rather than looking like a heading. */
+  .column-name {
+    font-size: var(--size-sm);
+    font-weight: 400;
+    color: var(--colour-ink);
+    white-space: nowrap;
+  }
+
+  .column-description {
+    min-width: 20rem;
+  }
+
+  /* The preview is the data itself, so long values stay on one line
+     and the table scrolls inside its own box rather than wrapping
+     every citation into a tall column. */
+  .preview td {
+    white-space: nowrap;
+  }
+
+  .citation {
+    max-width: var(--measure);
+    margin: 0;
+    padding: var(--space-4);
+    background: var(--colour-surface-sunk);
+    border-radius: var(--radius-data);
+    font-size: var(--size-sm);
+    line-height: var(--leading-body);
+    overflow-wrap: anywhere;
+  }
+</style>

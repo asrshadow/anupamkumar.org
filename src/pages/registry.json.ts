@@ -20,7 +20,7 @@
 // ============================================================
 
 import type { APIRoute } from "astro";
-import { getDatasets } from "../lib/datasets";
+import { getDatasets, downloadPath } from "../lib/datasets";
 
 export const GET: APIRoute = () => {
   const datasets = getDatasets();
@@ -57,6 +57,8 @@ export const GET: APIRoute = () => {
       resources: dataset.resources.map((resource) => ({
         name: resource.name,
         path: resource.path,
+        // Where the file itself can be fetched from this site.
+        download: `https://anupamkumar.org${downloadPath(dataset, resource)}`,
         rows: resource.rows,
         fields: resource.fields,
       })),

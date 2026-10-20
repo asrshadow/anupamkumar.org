@@ -255,3 +255,32 @@ export function getDatasets(): Dataset[] {
 export function getDataset(id: string): Dataset | undefined {
   return getDatasets().find((dataset) => dataset.id === id);
 }
+
+// ============================================================
+// STEP 5 — Where each file can be downloaded
+//
+// Every file a dataset lists in "resources" is published beside
+// its dataset page, under its own file name:
+//
+//   data/international/nobelprize-economic-sciences/clean/laureates.csv
+//   → /datasets/international/nobelprize-economic-sciences/laureates.csv
+//
+// The address is worked out HERE and nowhere else, so the dataset
+// page, the registry and the tools can never disagree about it.
+// These addresses are published links: never change the pattern.
+// ============================================================
+
+/** The file name alone — "laureates.csv" from "clean/laureates.csv". */
+export function downloadFileName(resource: DatasetResource): string {
+  return path.basename(resource.path);
+}
+
+/** The site address a resource is downloaded from. */
+export function downloadPath(dataset: Dataset, resource: DatasetResource): string {
+  return `/datasets/${dataset.id}/${downloadFileName(resource)}`;
+}
+
+/** Where the resource's file is on disk, for reading it at build time. */
+export function resourceFile(dataset: Dataset, resource: DatasetResource): string {
+  return path.join(dataset.folder, resource.path);
+}
