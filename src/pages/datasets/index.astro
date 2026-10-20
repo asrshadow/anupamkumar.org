@@ -67,13 +67,23 @@ const datasets = getDatasets();
                   </dd>
                 </div>
 
-                {dataset.totalRows !== undefined && (
+                {/* Rows only for a single table: rows of different
+                    tables mean different things and must not be
+                    added together. */}
+                {dataset.resources.length > 1 ? (
                   <div>
-                    <dt>Rows</dt>
-                    <dd class="numeric">
-                      {dataset.totalRows.toLocaleString("en-IN")}
-                    </dd>
+                    <dt>Files</dt>
+                    <dd class="numeric">{dataset.resources.length}</dd>
                   </div>
+                ) : (
+                  dataset.totalRows !== undefined && (
+                    <div>
+                      <dt>Rows</dt>
+                      <dd class="numeric">
+                        {dataset.totalRows.toLocaleString("en-IN")}
+                      </dd>
+                    </div>
+                  )
                 )}
               </dl>
 

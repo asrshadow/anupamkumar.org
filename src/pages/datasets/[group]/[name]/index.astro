@@ -154,11 +154,23 @@ const citation =
         <dd>{formatDate(new Date(dataset.updated))}</dd>
       </div>
       {
-        dataset.totalRows !== undefined && (
+        /* Rows are only added up for a single-table dataset. Rows of
+           different tables mean different things — a laureate, a
+           prize year — so their sum would describe nothing. A
+           multi-table dataset gives its number of files instead, and
+           each file's own row count is shown beside its download. */
+        dataset.resources.length > 1 ? (
           <div>
-            <dt>Rows</dt>
-            <dd class="numeric">{dataset.totalRows.toLocaleString("en-IN")}</dd>
+            <dt>Files</dt>
+            <dd class="numeric">{dataset.resources.length}</dd>
           </div>
+        ) : (
+          dataset.totalRows !== undefined && (
+            <div>
+              <dt>Rows</dt>
+              <dd class="numeric">{dataset.totalRows.toLocaleString("en-IN")}</dd>
+            </div>
+          )
         )
       }
       <div>
