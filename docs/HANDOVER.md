@@ -16,7 +16,7 @@ here is in [SESSION-LOG.md](SESSION-LOG.md). The rules are in `CLAUDE.md`.
 | **Tools** | **One:** `nobel-economics-timeline`, status `beta`. |
 | **Dataset pages** | Built. `/datasets/<group>/<name>/`, plus a download for every file at `/datasets/<group>/<name>/<file>`. |
 | **ToolFrame and tool pages** | Built. `src/components/ToolFrame.astro`, `src/pages/tools/[id].astro`. |
-| **Pushed to GitHub?** | **No.** Seven commits from 20 October are on `main` on this computer only. See below. |
+| **Published?** | **Yes**, on 20 October 2026. Deploy and accessibility check both passed on GitHub. |
 
 ## Waiting on Anupam
 
@@ -36,9 +36,9 @@ here is in [SESSION-LOG.md](SESSION-LOG.md). The rules are in `CLAUDE.md`.
 3. **Approve or reject the CLAUDE.md change** made in the last commit, `docs: point CLAUDE.md at the handover files`: a pointer at the top of
    §16 to this file, and §16 and §17.2 brought up to date. It is a single commit and can be
    undone on its own.
-4. **Then push.** The exact steps are below.
+4. ~~Push.~~ Done on 20 October 2026, after Anupam checked the data. Items 1–3 can still be revised and pushed the same way.
 
-## How to publish what is waiting
+## How to publish a change
 
 Run these in the VS Code terminal, one at a time:
 
