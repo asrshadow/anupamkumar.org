@@ -3,7 +3,7 @@
 Instructions for Claude when working in this repository.
 Read this file completely before making any change.
 
-**Last updated:** 12 September 2026 · **Blueprint version:** v1.3
+**Last updated:** 20 October 2026 · **Blueprint version:** v1.3
 
 ---
 
@@ -296,6 +296,8 @@ anupamkumar.org/
 │   └── check-dataset-freshness.mjs
 │
 ├── docs/
+│   ├── HANDOVER.md             ← where things stand now. Read first, every session.
+│   ├── SESSION-LOG.md          ← one dated entry per session, newest first
 │   ├── checklists/             ← the human routines in §13
 │   └── how-to/                 ← the three routines in §17, for Anupam
 │
@@ -892,9 +894,11 @@ These live in `tokens.css` alongside the colours.
   --width-page:   1120px;  /* the widest the content area ever gets */
   --width-gutter: var(--space-5);  /* the side margin, never less than this */
   --width-aside:  18rem;   /* the right-hand column, where a page has one */
+  --width-panel:  28rem;   /* a panel that slides in over the page, in a tool */
 ```
 
-`--width-aside` is the only permitted width for a sidebar. See §8.8.
+`--width-aside` is the only permitted width for a sidebar. See §8.8. `--width-panel` is for a
+floating panel a tool slides in (a full-width bottom sheet on a phone); added 20 October 2026.
 
 ### 8.3 Colour rules
 
@@ -1415,7 +1419,14 @@ data/**/microdata/
 
 ## 16. Current state
 
-**Phase 1 — the writing site.** Phase 0 is complete.
+> **Start every session by reading [docs/HANDOVER.md](docs/HANDOVER.md)** — where things
+> stand now and what is waiting — and the newest entry in
+> [docs/SESSION-LOG.md](docs/SESSION-LOG.md). **End every session** by adding an entry to the
+> log and rewriting the handover. This section records the settled state; those two files
+> carry the day-to-day.
+
+**Phase 1 — the writing site.** Phase 0 is complete. The first dataset and the first tool
+were added on 20 October 2026, ahead of Phase 2, at Anupam's request.
 
 ### Phase 0 — the permanent layer (done, 11 September 2026)
 
@@ -1476,22 +1487,26 @@ carry the same forty-word summary the featured piece uses. See §17.1.
 [docs/how-to/publish-a-piece-of-writing.md](docs/how-to/publish-a-piece-of-writing.md).
 The first image in the piece becomes its thumbnail on its own.
 
-**What is worth a session**, in the order it is worth doing:
+**What is worth a session** is kept current in [docs/HANDOVER.md](docs/HANDOVER.md).
 
-1. **The first real dataset.** Needs the detail page at `/datasets/<id>/` and the endpoint
-   that serves each dataset's files. The reader and `/registry.json` are already built and
-   tested, so this is smaller than it was.
-2. **The first tool**, with `ToolFrame` built alongside it.
-3. A chart in a piece, if one is wanted before either of the above. §17.1 settles how
-   charts are exported and why they are treated as printed plates in both themes.
+### Built on 20 October 2026 — the first dataset and the first tool
 
-**Deliberately not built yet**, and both for the same reason — a page designed against zero
-examples fits the first real example badly and sets a precedent by then:
-
-- `/datasets/<id>/` and the endpoint that serves each dataset's files. Build alongside the
-  **first real dataset**. `src/lib/datasets.ts` and `/registry.json` already exist and are
-  tested, so that session is the detail page and the download endpoint only.
-- `ToolFrame`, specified in §10. Build alongside the **first real tool**.
+- **Dataset:** `data/international/nobelprize-economic-sciences/`. Every economics Nobel
+  laureate, 1969–2026, from the Nobel Prize API (CC0). It is the worked example to copy, and
+  `data/_templates/` now holds blank starting files.
+- **Dataset pages:** `/datasets/<group>/<name>/`, built from `dataset.json`, with a columns
+  table, a preview and a suggested citation. Each file downloads from
+  `/datasets/<group>/<name>/<file>` — **a published link pattern that must never change**.
+  `/registry.json` carries the same download addresses.
+- **`ToolFrame`** (`src/components/ToolFrame.astro`) and **tool pages**
+  (`src/pages/tools/[id].astro`, which finds each tool's `Tool.astro` by itself, so rule 5
+  holds — tested by deleting the tool and building).
+- **Tool:** `src/tools/nobel-economics-timeline/`. It pulls out to the decades and in to each
+  year, and a panel slides in per laureate. The build writes the whole timeline into the page
+  as HTML, and a 4 KB script adds the interaction. **That is the pattern to copy:** it works
+  with JavaScript off and cannot lose content if the script fails.
+- **The Nobel API, like Substack, refuses GitHub's machines.** The dataset is refreshed by hand
+  each October; the steps are in its `build/README.md`.
 
 ### Verified on 12 September 2026, on the published site
 
@@ -1705,11 +1720,11 @@ worth building at roughly the fifth chart, not the first.
 directly on the marks** — §8.3 rule 4. If the chart is interactive rather than a picture,
 it is not a chart in an essay any more; it is a tool, and §17.3 applies.
 
-### 17.2 Adding a dataset — no code, once the detail page exists
+### 17.2 Adding a dataset — no code
 
-Today this needs one build session: `/datasets/<id>/` and the download endpoint do not
-exist yet, and are deliberately being built alongside the first real dataset rather than
-against none. **After that session, it is folders and files and no code at all.**
+The dataset page and the download address for each file were built on 20 October 2026
+alongside the first real dataset. **Adding a dataset is now folders and files and no code at
+all.** The worked example is `data/international/nobelprize-economic-sciences/`.
 
 1. **Decide where it goes.** §6.2: one of the eight fixed groups, by *jurisdiction*, never
    by topic. Topic goes in `keywords`, where one dataset can carry several and they can
