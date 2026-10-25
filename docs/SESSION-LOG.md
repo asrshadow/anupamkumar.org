@@ -11,6 +11,48 @@ commits), the decisions made and why, the problems hit, and anything left unfini
 
 ---
 
+## 25 October 2026 (third part) — placeholders, home page limits, sitemap
+
+**Asked for:** delete the two placeholder pieces. Say whether new writing updates the home page
+by itself, as datasets do. Plan how many of each kind of thing the home page shows. Make the
+sitemap visible to crawlers. Reword the datasets introduction, and list datasets on the home
+page with no description.
+
+| Commit | What |
+|---|---|
+| `content: retire the two placeholder pieces with redirects` | The two files deleted. |
+| `feat: point search engines at the sitemap` | `public/robots.txt`. |
+| `feat: set how many of each thing the home page shows` | `HOME_..._COUNT` constants. The Datasets block now lists titles only. |
+| `content: reword the datasets introduction` | "A curated collection of datasets from development economics, public policy and public finance." |
+| `docs: record the home page rule and page retirement` | CLAUDE.md §11 and §16. |
+| `content: redirect the retired placeholder addresses and tidy the sitemap` | `astro.config.mjs`: the redirects, and a sitemap filter. |
+
+**Decisions, and why:**
+
+- **Retired, not plainly deleted.** `/writing/hello/` now redirects to `/writing/`, and
+  `/notes/what-notes-are-for/` to `/notes/` (rule 8). The redirect pages carry `noindex`.
+- **The home page already updated itself** for writing, datasets and tools. CLAUDE.md just
+  never said so. §11 now does, with a table of counts.
+- **One stream for writing, with 6 pieces (1 featured and 5 listed).** Essays, notes and
+  archived posts are not split, because a reader wants the newest thing. Two lists would
+  push one below the first screen on a phone. Datasets show 5, tools 3 and subjects 8.
+- **The sitemap already existed.** What was missing was `robots.txt` telling crawlers where it
+  is. `/search/` is now left out of the sitemap, because that page asks not to be indexed.
+
+**Problems hit:** the plan's commit step tried to `git add` files that an earlier step had
+already deleted, so `astro.config.mjs` was left out of the commits. The push went out without
+the redirects, and for about ten minutes the two old addresses returned 404. Opus committed the
+file directly rather than re-planning, because a live link was broken. **Lesson for plans:
+after `git rm`, the deletion is already staged, so do not name the deleted path in `git add`.
+And an executor must stop at a failed command, not chain the next ones after it.**
+
+**Checks run:** the build and the accessibility check passed, including the redirect pages.
+Deploy and accessibility passed on GitHub. On the live site, `robots.txt` shows the Sitemap
+line and the sitemap returns 200. Both old addresses forward. The sitemap lists no search or
+retired page.
+
+---
+
 ## 25 October 2026 — a note on Musgrave, and plan-then-execute
 
 **Asked for:** a short note on public finance as Richard Musgrave defined it, with a proper

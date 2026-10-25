@@ -15,7 +15,9 @@ against [writing-framework.md](writing-framework.md). Add new resources to its �
 
 | | State |
 |---|---|
-| **Writing** | Two real pieces: the BRICS essay (12 September 2026) and the Musgrave note (25 October 2026). There are also two placeholders. Phase 1 wants four real pieces. |
+| **Writing** | Two real pieces: the BRICS essay (12 September 2026) and the Musgrave note (25 October 2026). The two placeholders were retired on 25 October, and their addresses redirect. Phase 1 wants four real pieces. |
+| **Home page** | Shows the newest 6 pieces of writing, 5 datasets, 3 tools and 8 subjects. The counts are set at the top of `src/pages/index.astro`, and the rule is in CLAUDE.md §11. |
+| **Sitemap** | `/sitemap-index.xml`, given to search engines in `/robots.txt`. It leaves out `/search/` and retired addresses. |
 | **Datasets** | **One:** `international/nobelprize-economic-sciences`, 1969–2026. |
 | **Tools** | **One:** `nobel-economics-timeline`, status `beta`. |
 | **Dataset pages** | Built. `/datasets/<group>/<name>/`, plus a download for every file at `/datasets/<group>/<name>/<file>`. |
@@ -101,10 +103,13 @@ Once the explainers are reviewed, change `status: "beta"` to `status: "stable"` 
 ## Suggested next steps, in order
 
 1. Review the explainers, push, and look at both pages on a phone.
-2. **Writing.** Phase 1 still wants two more real pieces. Both placeholders could now be
-   retired, because a real note exists: `content/essays/11-09-2026-hello.md` and
-   `content/notes/11-09-2026-what-notes-are-for.md`. Their URLs are published, so rule 8 asks
-   for a redirect, not a plain deletion.
+2. **Writing.** Phase 1 still wants two more real pieces. One placeholder remains:
+   `/writing/coming-soon/`. It is the Substack archive of a 2023 "coming soon" post, in
+   `content/external/02-09-2023-coming-soon.md`. Retiring it needs the archiver taught to skip
+   it, because deleting the file alone would let the next archive run bring it back.
+3. **Optional: tell Google about the sitemap.** In Google Search Console, add the site and
+   submit `https://anupamkumar.org/sitemap-index.xml`. Search engines will find it through
+   `robots.txt` anyway; submitting it only speeds that up, and shows which pages are indexed.
 3. A first **Indian public finance** dataset — the Union budget or RBI state finances — which is
    what the Datasets page promises next. The detail page and downloads already exist, so this is
    now folders and files only (CLAUDE.md §17.2).
