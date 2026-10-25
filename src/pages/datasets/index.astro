@@ -2,18 +2,10 @@
 // ============================================================
 // /datasets/ — one entry per published dataset.
 //
-// There are none yet, and the page says so plainly rather than
-// showing an empty grid. A navigation item may lead to a section
-// with no entries as long as the page explains what is coming; it
-// may never lead to a blank page or a 404.
-//
-// The per-dataset page at /datasets/<id>/ is deliberately not
-// built yet. It has to show a columns table, a provenance box,
-// vintage handling and a licence for a dataset that actually
-// exists, and datasets on this site come in very different shapes.
-// A detail page designed against no examples fits the first real
-// dataset badly and the second one worse. It gets built alongside
-// the first real dataset.
+// Each entry links to that dataset's own page at
+// /datasets/<group>/<name>/. If every dataset were removed, the
+// page would say plainly what is coming rather than show an empty
+// grid: a navigation item may never lead to a blank page or a 404.
 // ============================================================
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -27,15 +19,14 @@ const datasets = getDatasets();
 
 <BaseLayout
   title="Datasets"
-  description="Cleaned Indian public finance data, each one carrying its source, the date it was retrieved, and every column described with its unit."
+  description="A curated collection of datasets from development economics, public policy and public finance, each carrying its source and every column described with its unit."
 >
   <PageShell asideLabel="About the datasets">
     <header class="page-header">
       <h1>Datasets</h1>
       <p class="page-intro">
-        Cleaned public finance data, documented well enough to cite. The
-        original downloads are kept untouched alongside the cleaned version, so
-        anyone can check the cleaning rather than take it on trust.
+        A curated collection of datasets from development economics, public
+        policy and public finance.
       </p>
     </header>
 
