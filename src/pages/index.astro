@@ -20,29 +20,55 @@ import { getAllWriting, getAllTags, displayTag } from "../lib/writing";
 import { getDatasets } from "../lib/datasets";
 import { getTools } from "../lib/tools";
 
+// ------------------------------------------------------------
+// HOW MANY OF EACH THING THE HOME PAGE SHOWS
+//
+// The home page shows only the newest few of each kind of thing.
+// Everything is always listed in full on its own section page
+// (/writing/, /datasets/, /tools/), so nothing is lost when an
+// entry drops off the bottom here. Change a number here and the
+// home page follows; nothing else needs editing. CLAUDE.md §11
+// records these numbers and why they were chosen.
+// ------------------------------------------------------------
+
+// Essays, notes and archived Substack posts, newest first, as ONE
+// stream: the newest piece at the top, the rest listed below it.
+// 1 featured + 5 listed = 6.
+const HOME_WRITING_COUNT = 6;
+
+// Datasets in the right-hand column, most recently updated first.
+const HOME_DATASET_COUNT = 5;
+
+// Tools in the right-hand column, most recently updated first.
+// Fewer than datasets because each tool is a larger thing to open.
+const HOME_TOOL_COUNT = 3;
+
+// Subjects in the right-hand column. This list will be forty
+// entries long in two years, and a sidebar cannot hold forty.
+// The full list is on /writing/.
+const HOME_SUBJECT_COUNT = 8;
+
 const everything = await getAllWriting();
 
 // The newest piece gets the top of the page to itself.
 const featured = everything[0];
 
-// The next four go underneath it, in the ordinary listing style.
-const alsoRecent = everything.slice(1, 5);
+// The next ones go underneath it, in the ordinary listing style.
+const alsoRecent = everything.slice(1, HOME_WRITING_COUNT);
 
-// The subjects, for the sidebar. EIGHT, not all of them: this list
-// will be forty entries long in two years, and a sidebar cannot
-// hold forty. The full list is on /writing/.
-const topTags = (await getAllTags()).slice(0, 8);
+// The most-used subjects, for the sidebar.
+const topTags = (await getAllTags()).slice(0, HOME_SUBJECT_COUNT);
 
 // The newest datasets and tools, for the sidebar. Read from the same
 // lists the /datasets/ and /tools/ pages use, so a new dataset or
 // tool appears here by itself — there is nothing to edit on this
-// page when one is added. THREE of each at most: the sidebar points
-// to the sections; it does not replace them.
+// page when one is added. The sidebar points to the sections; it
+// does not replace them.
 //
 // Only the tools' config files are read (see src/lib/tools.ts), so
 // the home page still builds if every tool is deleted (rule 5).
-const latestDatasets = getDatasets().slice(0, 3);
-const latestTools = getTools().slice(0, 3);
+const latestDatasets = getDatasets().slice(0, HOME_DATASET_COUNT);
+const latestTools = getTools().slice(0, HOME_TOOL_COUNT);
 ---
 
 <BaseLayout
@@ -105,10 +131,7 @@ const latestTools = getTools().slice(0, 3);
 
     <Fragment slot="aside">
       <SideBlock title="Datasets">
-        <p>
-          Cleaned data, each dataset carrying its source, the date it was
-          retrieved, and every column described with its unit.
-        </p>
+        {/* No description here, by choice: just the datasets. */}
         {
           latestDatasets.length > 0 ? (
             <>
