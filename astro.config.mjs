@@ -31,6 +31,24 @@ export default defineConfig({
   // ----------------------------------------------------------
   trailingSlash: "always",
 
+  // ----------------------------------------------------------
+  // Retired pages. A published address is never allowed to break
+  // (CLAUDE.md rule 8), so when a page is deleted its old address
+  // is listed here and sends the reader somewhere sensible.
+  // Astro writes a tiny page at the old address that forwards the
+  // browser and tells search engines not to index it.
+  //
+  // Add a line here every time a published page is removed.
+  // ----------------------------------------------------------
+  redirects: {
+    // Placeholder essay from before there was any real writing.
+    // Retired 25 October 2026.
+    "/writing/hello/": "/writing/",
+    // Placeholder note from before there was a real note.
+    // Retired 25 October 2026.
+    "/notes/what-notes-are-for/": "/notes/",
+  },
+
   integrations: [
     // Lets an essay be written in .mdx instead of .md when it needs
     // a chart or another component embedded in the prose. Plain .md
@@ -38,8 +56,23 @@ export default defineConfig({
     mdx(),
 
     // Writes /sitemap-index.xml at build time, listing every page so
-    // search engines can find them all.
-    sitemap(),
+    // search engines can find them all. Readers never see it; the
+    // address is given to search engines in public/robots.txt.
+    //
+    // Two kinds of page are left out on purpose:
+    // - /search/, which asks search engines not to index it (a page
+    //   of search results is not a page worth finding by search);
+    // - the retired addresses in "redirects" above, which only
+    //   forward to another page.
+    sitemap({
+      filter: (page) => {
+        const path = new URL(page).pathname;
+        if (path === "/search/") return false;
+        if (path === "/writing/hello/") return false;
+        if (path === "/notes/what-notes-are-for/") return false;
+        return true;
+      },
+    }),
   ],
 
   // ----------------------------------------------------------
