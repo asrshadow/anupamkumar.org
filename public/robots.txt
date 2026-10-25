@@ -1,0 +1,8 @@
+# robots.txt — read by search engines, never by readers.
+# Every page on this site may be crawled. The Sitemap line tells
+# search engines where the full list of pages is, so they find new
+# writing, datasets and tools without waiting for a link to them.
+User-agent: *
+Allow: /
+
+Sitemap: https://anupamkumar.org/sitemap-index.xml
