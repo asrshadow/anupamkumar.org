@@ -3,7 +3,7 @@
 Instructions for Claude when working in this repository.
 Read this file completely before making any change.
 
-**Last updated:** 20 October 2026 · **Blueprint version:** v1.3
+**Last updated:** 25 October 2026 · **Blueprint version:** v1.3
 
 ---
 
@@ -1414,6 +1414,57 @@ data/**/microdata/
       every column described with its unit, and no structure created that it did not need.
 - [ ] If derived data: `LINEAGE.md` and `METHOD.md` present.
 - [ ] Commit message says what changed, in plain English.
+
+### 15.1 Plan first, then hand over — the right model for each part of a task
+
+*Added 25 October 2026, at Anupam's request.*
+
+**Every new task is done in two stages, by two different models.** Thinking is expensive and
+rare; carrying out a clear plan is cheaper and common. So the stronger model does the thinking
+once, and a cheaper one does the work.
+
+| Stage | Model | Effort |
+|---|---|---|
+| **1 — Plan** | Opus 5.5 (`claude-opus-5-5`), the main session | high, extra high or max |
+| **2 — Execute** | Sonnet 5.5 (`claude-sonnet-5-5`), a subagent | default |
+
+**How this works in practice.** Anupam starts the session on Opus 5.5 at high effort or above,
+chosen with `/model` in Claude Code. Opus writes the plan. It then hands the plan to a subagent
+— a second Claude started from inside the session with the Agent tool — with the model set to
+`sonnet`. The subagent carries the plan out and reports back.
+
+#### Stage 1 — what the plan must contain
+
+1. **Goal and definition of done.** What finished looks like, using the checklist above.
+2. **Context.** The files read, and the rules in this file that apply.
+3. **Approach and algorithm.** For anything not obvious, the method step by step and why it
+   was chosen over the alternatives.
+4. **Sub-plans and steps.** The task broken into steps small enough that each ends somewhere
+   safe. For each step: the exact files, the exact commands, and what should be seen afterwards.
+5. **Checks.** How each step is confirmed to have worked.
+6. **Fallback plan.** What happens when a step fails — see below.
+
+**Judgement stays in Stage 1.** Anything that needs judgement — the words of an essay, note or
+explainer, a design decision, how to clean a dataset — is settled in the plan, with the final
+text written out where there is text. The executor is never asked to decide what something
+should say or how it should be designed.
+
+#### Stage 2 — what the executor does
+
+Follows the plan literally, in order. Does not redesign, skip or improvise around a step. Runs
+every check the plan names.
+
+#### The fallback — every plan states this
+
+1. **If a step fails, the executor stops** at that step. It does not try a different approach.
+2. **It reports back to Opus** with the step number, the exact command, and the exact error
+   output.
+3. **Opus diagnoses the failure, revises the plan, and hands the revised plan over again.**
+4. **Repeat** until the task is done.
+5. **If the same step fails twice after revision**, Opus stops and asks Anupam what he sees on
+   screen, rather than looping (§2: assume a missing step in the instructions, not a mistake).
+
+A plan for a small task can be a few lines. It is still written down, and still handed over.
 
 ---
 
