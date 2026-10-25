@@ -1165,6 +1165,35 @@ what is coming. It may never lead to a 404 or a page that is simply blank.
 destination to a reader and two URLs on the server, because both were published and rule 8
 says neither may break.
 
+### The home page — the newest few of everything, updated by itself
+
+**Nothing on the home page is edited by hand when something is published.** It reads the same
+lists as the section pages, so a new essay, note, dataset or tool appears on it at the next
+build. This is true of all four kinds of thing, not only datasets.
+
+It shows only the newest few of each. **Everything is always listed in full on its own
+section page**, so an entry that drops off the home page is not lost.
+
+| What | Where on the home page | How many | Full list |
+|---|---|---|---|
+| Writing: essays, notes and archived Substack posts, as one stream | Main column: the newest piece featured, then the next ones | 6 (1 + 5) | `/writing/` (notes alone at `/notes/`) |
+| Datasets, most recently updated first | Right-hand column, titles only | 5 | `/datasets/` |
+| Tools, most recently updated first | Right-hand column | 3 | `/tools/` |
+| Subjects, most used first | Right-hand column | 8 | `/writing/` |
+
+**Why one writing stream and not separate essay and note lists:** a reader arriving on the
+home page wants the newest thing, whatever its length. Each entry is labelled, and two short
+lists would push the second one below the first screen on a phone.
+
+**To change a number**, edit the `HOME_..._COUNT` constants at the top of
+`src/pages/index.astro`, and update this table in the same commit.
+
+### Retiring a page
+
+A published address never breaks (rule 8). When a page is deleted, its old address goes in the
+`redirects` list in `astro.config.mjs`, pointing at the most sensible page that remains, and in
+the sitemap `filter` beside it. The list there is the record of every retired address.
+
 ### The writing framework — applied to every piece
 
 **All new writing follows [docs/writing-framework.md](docs/writing-framework.md)**: essays,
@@ -1518,12 +1547,9 @@ were added on 20 October 2026, ahead of Phase 2, at Anupam's request.
       with three tools and no writing is a portfolio of unfinished experiments.
       - [x] *BRICS — an economic multilateral association of emerging market economies*,
             12 September 2026
-- [ ] Delete the two placeholder pieces once there is enough real writing:
-      `content/essays/11-09-2026-hello.md` and
-      `content/notes/11-09-2026-what-notes-are-for.md`.
-      **The essay placeholder can go now** — the BRICS piece is newer, so the home page
-      would still lead with real writing. **The note placeholder cannot yet**: it is the
-      only note, and deleting it leaves `/notes/` empty.
+- [x] The two placeholder pieces deleted on 25 October 2026. Their addresses,
+      `/writing/hello/` and `/notes/what-notes-are-for/`, redirect to `/writing/` and
+      `/notes/`.
 
 ### Layout and sections — the 12 September 2026 work order
 
