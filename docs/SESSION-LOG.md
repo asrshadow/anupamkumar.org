@@ -11,6 +11,40 @@ commits), the decisions made and why, the problems hit, and anything left unfini
 
 ---
 
+## 25 October 2026 — a note on Musgrave, and plan-then-execute
+
+**Asked for:** a short note on public finance as Richard Musgrave defined it, with a proper
+citation, a theoretical definition and an explanation for a teenager, published. And a rule in
+CLAUDE.md: plan with Opus 5.5 at high effort or above, hand the plan to Sonnet 5.5 to carry
+out, and come back to Opus when execution fails.
+
+**What changed:**
+
+| Commit | What |
+|---|---|
+| `note: add what public finance is, after Musgrave` | `content/notes/25-10-2026-public-finance-musgrave.md`, live at `/notes/public-finance-musgrave/`. The first real note. |
+| `docs: plan with Opus, execute with Sonnet` | CLAUDE.md §15.1: two stages, what a plan must contain, and the fallback loop. |
+
+**Decisions, and why:**
+
+- **A note, not an essay.** It is under a thousand words, has no table, and needs one citation.
+- **The citation is to the 1959 *Theory of Public Finance*, p. 3**, quoted for its opening
+  definition only. The three branches (allocation, distribution, stabilisation) are
+  paraphrased from its first chapter rather than quoted.
+- **The teenager's section uses Indian examples**: GST on a bill, free textbooks, the free-grain
+  scheme in 2020.
+- **The fallback loop is capped.** If the same step fails twice after revision, Opus stops and
+  asks Anupam. Without a cap, a broken step could loop forever.
+- **This session followed the new rule.** Opus wrote the note and the plan. A Sonnet subagent
+  ran the build, the accessibility check, the commits and the push.
+
+**Checks run:** the build passed (25 pages). The accessibility check passed on all 25 pages.
+The deploy succeeded, and the live note returned HTTP 200.
+
+**Left unfinished:** Anupam should check the Musgrave quotation against a copy of the book.
+
+---
+
 ## 20 October 2026 — the first dataset and the first tool
 
 **Asked for:** a dataset of every economics Nobel laureate, an interactive timeline where readers

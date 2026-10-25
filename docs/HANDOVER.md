@@ -3,7 +3,10 @@
 **Rewritten at the end of every session.** It describes things as they stand now. How they got
 here is in [SESSION-LOG.md](SESSION-LOG.md). The rules are in `CLAUDE.md`.
 
-**Last rewritten:** 20 October 2026
+**Last rewritten:** 25 October 2026
+
+**How sessions now work (CLAUDE.md §15.1):** Opus 5.5 at high effort or above plans. Sonnet 5.5
+carries the plan out as a subagent. Failures go back to Opus.
 
 ---
 
@@ -11,7 +14,7 @@ here is in [SESSION-LOG.md](SESSION-LOG.md). The rules are in `CLAUDE.md`.
 
 | | State |
 |---|---|
-| **Writing** | One real essay (BRICS, 12 September 2026) and two placeholders. Phase 1 wants four real pieces. |
+| **Writing** | Two real pieces: the BRICS essay (12 September 2026) and the Musgrave note (25 October 2026). There are also two placeholders. Phase 1 wants four real pieces. |
 | **Datasets** | **One:** `international/nobelprize-economic-sciences`, 1969–2026. |
 | **Tools** | **One:** `nobel-economics-timeline`, status `beta`. |
 | **Dataset pages** | Built. `/datasets/<group>/<name>/`, plus a download for every file at `/datasets/<group>/<name>/<file>`. |
@@ -20,6 +23,8 @@ here is in [SESSION-LOG.md](SESSION-LOG.md). The rules are in `CLAUDE.md`.
 
 ## Waiting on Anupam
 
+0. **Check the Musgrave quotation** in `content/notes/25-10-2026-public-finance-musgrave.md`
+   against a copy of *The Theory of Public Finance* (1959), p. 3. It was quoted from memory.
 1. **Review the 58 explainers** in `src/tools/nobel-economics-timeline/explainers.md`. They are
    the site's own words, shown under every prize year and in every laureate's panel.
    - **2026 (Hall and Woodford) needs the most care.** It was written without the committee's
@@ -89,8 +94,10 @@ Once the explainers are reviewed, change `status: "beta"` to `status: "stable"` 
 ## Suggested next steps, in order
 
 1. Review the explainers, push, and look at both pages on a phone.
-2. **Writing.** Phase 1 still wants three more real essays. The essay placeholder
-   `content/essays/11-09-2026-hello.md` can be deleted now.
+2. **Writing.** Phase 1 still wants two more real pieces. Both placeholders could now be
+   retired, because a real note exists: `content/essays/11-09-2026-hello.md` and
+   `content/notes/11-09-2026-what-notes-are-for.md`. Their URLs are published, so rule 8 asks
+   for a redirect, not a plain deletion.
 3. A first **Indian public finance** dataset — the Union budget or RBI state finances — which is
    what the Datasets page promises next. The detail page and downloads already exist, so this is
    now folders and files only (CLAUDE.md §17.2).
