@@ -298,6 +298,7 @@ anupamkumar.org/
 ├── docs/
 │   ├── HANDOVER.md             ← where things stand now. Read first, every session.
 │   ├── SESSION-LOG.md          ← one dated entry per session, newest first
+│   ├── writing-framework.md    ← the rules all writing is checked against. See §11.
 │   ├── checklists/             ← the human routines in §13
 │   └── how-to/                 ← the three routines in §17, for Anupam
 │
@@ -1164,6 +1165,18 @@ what is coming. It may never lead to a 404 or a page that is simply blank.
 destination to a reader and two URLs on the server, because both were published and rule 8
 says neither may break.
 
+### The writing framework — applied to every piece
+
+**All new writing follows [docs/writing-framework.md](docs/writing-framework.md)**: essays,
+notes, explainers, descriptions and page summaries. It covers writing for the reader,
+removing AI writing patterns, search and discovery, accuracy and citation, and a checklist to
+run before publishing. Read that file, not the outside sources it was drawn from; it records
+what was taken from each, and why the rest was left out.
+
+**To learn from a new resource**, add a row to its §7 and fold the rules that fit into the
+right section. Never install a writing or SEO tool to do this. Outside tools that need a
+server, an API key or a hosted service break rules 1 and 4.
+
 ### Essay frontmatter
 
 ```yaml
@@ -1447,7 +1460,8 @@ chosen with `/model` in Claude Code. Opus writes the plan. It then hands the pla
 **Judgement stays in Stage 1.** Anything that needs judgement — the words of an essay, note or
 explainer, a design decision, how to clean a dataset — is settled in the plan, with the final
 text written out where there is text. The executor is never asked to decide what something
-should say or how it should be designed.
+should say or how it should be designed. Any writing in the plan has already been checked
+against [docs/writing-framework.md](docs/writing-framework.md) (§11).
 
 #### Stage 2 — what the executor does
 
