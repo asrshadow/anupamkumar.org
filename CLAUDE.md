@@ -1495,7 +1495,9 @@ against [docs/writing-framework.md](docs/writing-framework.md) (§11).
 #### Stage 2 — what the executor does
 
 Follows the plan literally, in order. Does not redesign, skip or improvise around a step. Runs
-every check the plan names.
+every check the plan names. **Runs commands one at a time, and never runs the next command
+after one that failed.** On 25 October 2026 a failed `git add` was followed by a push, which
+published the site without its redirects.
 
 #### The fallback — every plan states this
 
