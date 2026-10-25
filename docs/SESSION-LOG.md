@@ -43,6 +43,47 @@ The deploy succeeded, and the live note returned HTTP 200.
 
 **Left unfinished:** Anupam should check the Musgrave quotation against a copy of the book.
 
+### Later the same day — revising the note, and the writing framework
+
+**Asked for:** the note's title changed to "What is Public Finance? - Simplified". The old
+description replaced with a short biography of Musgrave, naming his seminal work and calling
+him the father of modern public finance. The second heading changed to "Public Finance in
+Daily Life", and its opening rewritten for readers from any background. Two GitHub
+repositories applied to the note, and built into CLAUDE.md for all future writing, through a
+framework file that can grow.
+
+| Commit | What |
+|---|---|
+| `note: retitle the public finance note and add Musgrave's biography` | New title, description, a "Who was Richard Musgrave" section, the new heading and opening, and the whole note edited to remove AI writing patterns. The URL is unchanged. |
+| `docs: add the writing framework` | `docs/writing-framework.md`: writing for the reader, AI writing patterns, search and discovery, accuracy and citation, a pre-publish checklist, and a sources table that grows. |
+| `docs: apply the writing framework to all new writing` | CLAUDE.md §5, §11 and §15.1 now point at the framework. |
+
+**Decisions, and why:**
+
+- **Neither repository is used as software. Their rules are in the framework instead.**
+  - **OpenSEO** needs a running server and a paid DataForSEO API key. That breaks rule 1, rule
+    4 and the free-only budget. Its `deslop` and web-content skills (MIT) supplied the writing
+    rules.
+  - **Turnitout Humanizer** is a hosted service, or an API that needs a key, so a draft would
+    leave the repository. It swaps synonyms automatically, which can change technical terms
+    and quotations. Its purpose is to get past AI and plagiarism detectors, which is not this
+    site's aim. Its AI-phrase, em-dash and zero-width-character rules were taken.
+- **The URL stayed `/notes/public-finance-musgrave/`.** The address was already published
+  (rule 8), and the title does not set it.
+- **The biography went into the note, and the description now names Musgrave as the father of
+  modern public finance.** A description has to stay one sentence, because listings and
+  search results show it.
+- **Bolded list openers and em dashes were removed from the note** under the framework's §3.
+  Titles may still use a dash.
+
+**Checks run:** no zero-width characters in the three files, and no em dashes in the note. The
+build and the accessibility check both passed on 25 pages. Deploy and accessibility passed on
+GitHub. The new section was confirmed on the live page.
+
+**Left unfinished:** the biographical facts (1910–2007, Königstein, 1933, Harvard doctorate,
+Federal Reserve Board, the five universities) were written from memory. They need checking,
+along with the quotation.
+
 ---
 
 ## 20 October 2026 — the first dataset and the first tool

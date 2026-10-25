@@ -6,7 +6,8 @@ here is in [SESSION-LOG.md](SESSION-LOG.md). The rules are in `CLAUDE.md`.
 **Last rewritten:** 25 October 2026
 
 **How sessions now work (CLAUDE.md §15.1):** Opus 5.5 at high effort or above plans. Sonnet 5.5
-carries the plan out as a subagent. Failures go back to Opus.
+carries the plan out as a subagent. Failures go back to Opus. **All writing** is checked
+against [writing-framework.md](writing-framework.md). Add new resources to its §7.
 
 ---
 
@@ -23,8 +24,14 @@ carries the plan out as a subagent. Failures go back to Opus.
 
 ## Waiting on Anupam
 
-0. **Check the Musgrave quotation** in `content/notes/25-10-2026-public-finance-musgrave.md`
-   against a copy of *The Theory of Public Finance* (1959), p. 3. It was quoted from memory.
+0. **Check the Musgrave note** (`content/notes/25-10-2026-public-finance-musgrave.md`). Both
+   of these were written from memory:
+   - the quotation, against *The Theory of Public Finance* (1959), p. 3
+   - the biography: born 1910 in Königstein, moved to the US in 1933, Harvard doctorate, the
+     Federal Reserve Board in the 1940s, Michigan, Johns Hopkins, Princeton, Harvard, then
+     Santa Cruz, died 2007
+   Also decide whether to keep the spaced hyphen in the title, "What is Public Finance? -
+   Simplified", or change it to a colon.
 1. **Review the 58 explainers** in `src/tools/nobel-economics-timeline/explainers.md`. They are
    the site's own words, shown under every prize year and in every laureate's panel.
    - **2026 (Hall and Woodford) needs the most care.** It was written without the committee's
