@@ -9,9 +9,9 @@ draft: false
 ---
 
 <!-- This file was written automatically from the Substack RSS feed.
-     Do not edit it by hand: the archiver would not notice, and the
-     change would be lost if the file were ever regenerated. To
-     correct something, fix it in Substack and delete this file. -->
+     Do not edit it by hand: the next sync would overwrite the change.
+     To correct something, edit the post on Substack. The daily sync
+     then rewrites this file to match. -->
 ![](https://substackcdn.com/image/fetch/$s_!WwaG!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F6bb02108-e22a-40a1-b5ea-89d0041542cb_960x1280.jpeg)
 
 Raisina Dialogue is a highly complex event that is executed through immense effort behind the scenes while appearing seamless in the foreground. The scale of coordination becomes even more apparent when viewed against the current global context—disruptions in international travel, fractured geopolitical relationships, rising economic uncertainty, and the explosive growth of artificial intelligence.
