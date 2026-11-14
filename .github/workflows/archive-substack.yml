@@ -29,12 +29,10 @@
 # up quietly rather than fail — nothing about this site may
 # depend on Substack being reachable.
 #
-# So the real routine is one command on your own computer, after
-# publishing something on Substack:
-#
-#     npm run archive-substack
-#
-# then commit what it wrote. The essay checklist says so too.
+# So the real sync runs on your own computer instead: Windows
+# Task Scheduler runs scripts/sync-substack.ps1 once a day, which
+# runs the same archiver and commits and pushes what it wrote.
+# Setup is in scripts/README.md.
 #
 # This file is kept because it costs nothing, it fails harmlessly,
 # and it will start working on its own if Substack ever relaxes.

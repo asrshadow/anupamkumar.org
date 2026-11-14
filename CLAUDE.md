@@ -1291,7 +1291,7 @@ a one-person project means they would not get done.
 | File | When it runs | What it does | Add in |
 |---|---|---|---|
 | `deploy.yml` | Every push to `main` | Builds the site and publishes it to GitHub Pages. **Essential — this is what makes the site exist.** | Done |
-| `archive-substack.yml` | Daily, and on demand | Tries to fetch the Substack RSS feed. **Does not work — see below.** | Done |
+| `archive-substack.yml` | Daily, and on demand | Tries to fetch the Substack RSS feed. **Does not work — see below.** The real sync runs on Anupam's PC. | Done |
 | `check-links.yml` | Weekly | Finds dead links and reports them. **Government URLs rot constantly** — indiabudget.gov.in reorganises most years. Without this, a two-year-old essay quietly becomes uncitable. | Done |
 | `accessibility-check.yml` | Every push and pull request | Runs `npm run check-a11y`: every page in light, in dark, and at 360px, failing on any violation or sideways scroll. Catches roughly a third of issues; the rest still need the manual list in §9. | Done |
 | `validate-data.yml` | Any push touching `data/` | Checks every `dataset.json` parses, every column it declares exists in the CSV, no file exceeds 50 MB, and every dataset has a README, SOURCES and CHANGELOG. **Note it validates each dataset against its own declaration — not against a global schema.** | Phase 2 |
@@ -1303,10 +1303,14 @@ There is no workflow that builds the registry. It is an endpoint served at
 
 **The Substack archiver does not work from GitHub, and this is expected.** Substack refuses
 requests coming from a data centre and answers 403 whatever headers are sent, tested on
-11 September 2026. The script gives up quietly so the run still passes, because nothing on
-this site may depend on Substack being reachable. **The reliable route is
-`npm run archive-substack` on Anupam's own machine**, then committing what it wrote. The
-workflow is kept only because it costs nothing and would start working on its own if
+11 September 2026, and still 403 on 14 November 2026. The script gives up quietly so the run
+still passes, because nothing on this site may depend on Substack being reachable. **The real
+sync runs on Anupam's own machine**: since 14 November 2026, Windows Task Scheduler runs
+`scripts/sync-substack.ps1` daily, which runs the archiver and commits and pushes anything
+new or edited. Setup is in `scripts/README.md`. The archiver matches a post by its
+`substackUrl`, rewrites the file when the post was edited on Substack, never renames a file,
+and skips any post whose `substackUrl` is on a file in `content/essays/` or `content/notes/`.
+The workflow is kept only because it costs nothing and would start working on its own if
 Substack relaxed. Do not replace it with a third-party relay or a reverse-engineered API.
 
 **`check-links.yml` writes its report to the run summary**, and additionally tries to open
@@ -1365,7 +1369,7 @@ npm run dev                # local preview while writing. Ctrl+C stops it.
 npm run build              # build the site into dist/, and the search index
 npm run preview            # serve what build produced — the only way to test search
 npm run check-a11y         # accessibility check, needs a build first
-npm run archive-substack   # pull new Substack posts into content/external/
+npm run archive-substack   # pull new and edited Substack posts into content/external/
 npm run relock             # rebuild package-lock.json after adding a dependency
 ```
 

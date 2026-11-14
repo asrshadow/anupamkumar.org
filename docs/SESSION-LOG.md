@@ -11,6 +11,38 @@ commits), the decisions made and why, the problems hit, and anything left unfini
 
 ---
 
+## 14 November 2026 — Substack posts sync by themselves
+
+**Asked for:** new or edited Substack posts should reach the site automatically, using no
+Claude agents to do it.
+
+**Found:** the daily GitHub workflow still gets 403 from Substack (run on 14 November 2026),
+and goes green because the archiver gives up quietly. Separately, the archiver never
+overwrote a file and matched posts by title, so edits never came through and a retitled post
+would have been archived twice.
+
+| Commit | What |
+|---|---|
+| `feat: sync edited Substack posts, not only new ones` | `scripts/archive-substack.mjs` matches posts by `substackUrl`, rewrites a file when the post changed, keeps the filename, and skips posts owned by `content/essays/` or `content/notes/`. |
+| `feat: run the Substack sync daily from Anupam's PC` | `scripts/sync-substack.ps1`, `scripts/install-substack-sync.ps1`, `scripts/README.md`. |
+| `docs: describe the daily Substack sync` | CLAUDE.md §13, the external README, the essay checklist, the workflow's comments, the handover. |
+
+**Decisions, and why:**
+
+- **Run it on Anupam's PC with Task Scheduler**, not in the browser and not through a cloud
+  relay. A browser fetch would need a third-party proxy and would stop the repository being
+  the archive. A relay is ruled out by CLAUDE.md §13. A home connection is what Substack
+  accepts.
+- **Files in `content/external/` may now be overwritten.** They were always generated and
+  never hand-edited, so rewriting them is consistent with §11. Filenames never change (rule 8).
+- **Done in one session, without the §15.1 subagent hand-off.** The change was small enough to plan and test directly.
+
+**Unfinished:** Anupam to run the one-time setup and test. `sync-substack.ps1` was not
+run before commit; the archiver was tested against a local sample feed (new post, unchanged
+post, edited post, retitled post, post owned by an essay).
+
+---
+
 ## 25 October 2026 (third part) — placeholders, home page limits, sitemap
 
 **Asked for:** delete the two placeholder pieces. Say whether new writing updates the home page
