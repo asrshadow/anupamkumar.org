@@ -3,7 +3,7 @@
 **Rewritten at the end of every session.** It describes things as they stand now. How they got
 here is in [SESSION-LOG.md](SESSION-LOG.md). The rules are in `CLAUDE.md`.
 
-**Last rewritten:** 25 October 2026
+**Last rewritten:** 14 November 2026
 
 **How sessions now work (CLAUDE.md ยง15.1):** Opus 5.5 at high effort or above plans. Sonnet 5.5
 carries the plan out as a subagent. Failures go back to Opus. **All writing** is checked
@@ -22,9 +22,15 @@ against [writing-framework.md](writing-framework.md). Add new resources to its ย
 | **Tools** | **One:** `nobel-economics-timeline`, status `beta`. |
 | **Dataset pages** | Built. `/datasets/<group>/<name>/`, plus a download for every file at `/datasets/<group>/<name>/<file>`. |
 | **ToolFrame and tool pages** | Built. `src/components/ToolFrame.astro`, `src/pages/tools/[id].astro`. |
+| **Substack sync** | New and edited Substack posts are copied in once a day by `scripts/sync-substack.ps1`, run by Windows Task Scheduler on Anupam's PC (GitHub is still blocked by Substack). Setup in `scripts/README.md`. |
 | **Published?** | **Yes**, on 20 October 2026. Deploy and accessibility check both passed on GitHub. |
 
 ## Waiting on Anupam
+
+- **Set up the daily Substack sync, once** (14 November 2026). Steps 1 to 4 in
+  [scripts/README.md](../scripts/README.md): one command to install, one to test, one to read
+  the log. The PowerShell script was not test-run before it was committed, so the test in
+  step 4 matters.
 
 0. **Check the Musgrave note** (`content/notes/25-10-2026-public-finance-musgrave.md`). Both
    of these were written from memory:

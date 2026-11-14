@@ -11,20 +11,22 @@ exists in this repository even if Substack does not exist in ten years.
 `scripts/archive-substack.mjs` reads the Substack **public RSS feed**, converts each post
 to Markdown and writes it here with `canonical: "substack"`.
 
-**Run it on your own computer after publishing something on Substack:**
+**This happens by itself once a day, from your own computer.** Windows Task Scheduler runs
+`scripts/sync-substack.ps1`, which runs the archiver and then commits and pushes anything
+that changed. A new post gets a new file here, and a post edited on Substack has its file
+rewritten. The one-time setup is in [scripts/README.md](../../scripts/README.md).
 
-```bash
-npm run archive-substack
+To do the same thing by hand at any time:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\sync-substack.ps1
 ```
 
-Then commit what it wrote. The script never overwrites a file that already exists, so a
-post is captured once and then left alone, and running it twice is safe.
-
-There is also a workflow that tries this daily on GitHub. **It does not currently work**,
-and that is expected: Substack refuses requests coming from a data centre, which is where
-GitHub's build machines are, and answers with a 403 whatever headers are sent. The run
-still goes green, because the script gives up quietly rather than failing. It is kept
-because it costs nothing and will start working on its own if Substack ever relaxes.
+There is also a workflow that tries this daily on GitHub. **It does not work**, and that is
+expected: Substack refuses requests coming from a data centre, which is where GitHub's
+build machines are, and answers with a 403 whatever headers are sent. The run still goes
+green, because the script gives up quietly rather than failing. That is why the sync runs
+on your computer instead.
 
 ## Why the archiver only reads the feed
 
@@ -56,11 +58,10 @@ else's writing under this site's name.
 
 ## If you want to edit one
 
-Do not edit it here — the archiver would not notice, and the change would be lost if the
-file were ever regenerated.
+Do not edit it here. The next sync would overwrite your change.
 
-Either fix it in Substack and delete the local file so the archiver fetches it again, or,
-if it has grown into something you want to own properly, move the file to
+Either fix it in Substack and the next sync updates the file here, or, if it has grown into
+something you want to own properly, move the file to
 `content/essays/`, change `canonical` to `"self"`, and set the canonical field in Substack
 to point at this site instead.
 
@@ -70,4 +71,4 @@ Export the Substack subscriber list every quarter and keep it somewhere private,
 this public repository**. The list is the asset. The platform holding it is not. This is
 part of the [quarterly review](../../docs/checklists/quarterly-review.md).
 
-**Last updated:** 11 September 2026
+**Last updated:** 14 November 2026
