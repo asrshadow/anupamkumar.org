@@ -26,10 +26,28 @@
 // HOW TO RUN IT
 //   npm run archive-substack
 // It prints what it found and what it wrote. Running it twice is
-// safe: existing files are never touched.
+// safe: a post that has not changed on Substack is left alone.
+//
+// NEW POSTS AND EDITED POSTS
+// A new post gets a new file. A post already archived is matched
+// by its Substack address (the substackUrl line in the file), and
+// if the post was edited on Substack, its file is rewritten with
+// the new text. The FILENAME never changes, even if the title did,
+// because the filename decides the web address on this site and a
+// published address must never break (CLAUDE.md, rule 8).
+//
+// A post whose Substack address appears in content/essays/ or
+// content/notes/ is skipped entirely. Those are pieces this site
+// owns, either written here first and cross-posted, or moved
+// across from content/external/ by hand.
 //
 // ------------------------------------------------------------
 // RUN IT ON YOUR OWN COMPUTER. This is the reliable way.
+//
+// Since 14 November 2026 this happens by itself once a day:
+// scripts/sync-substack.ps1 runs this file, then commits and
+// pushes whatever changed, and Windows Task Scheduler starts it.
+// See scripts/README.md for the one-time setup.
 //
 // There is a workflow that tries this daily on GitHub, but it
 // does not work and probably never will: Substack refuses
@@ -57,7 +75,7 @@
 //   Writes: content/external/DD-MM-YYYY-slug.md
 // ============================================================
 
-import { writeFile, readdir, mkdir } from "node:fs/promises";
+import { writeFile, readFile, readdir, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
@@ -76,6 +94,11 @@ const FEED_URL = "https://asranupam.substack.com/feed";
 
 // Where the archived copies are written.
 const OUTPUT_DIRECTORY = "content/external";
+
+// Folders holding pieces this site owns. A Substack post whose
+// address appears in a file here is never archived, because the
+// site already has it as an essay or a note.
+const OWNED_DIRECTORIES = ["content/essays", "content/notes"];
 
 // How long to wait for the feed before giving up, in milliseconds.
 const TIMEOUT_MS = 20000;
@@ -370,6 +393,53 @@ function makeDescription(markdown, fallbackTitle) {
 }
 
 // ============================================================
+// STEP 3b — Find the files that already exist
+//
+// Every archived file records where it came from in a line like
+//   substackUrl: "https://asranupam.substack.com/p/some-post"
+// Reading that line is how a post on Substack is matched to its
+// file here, even if the post's title has since changed.
+// ============================================================
+
+/** Pull the substackUrl value out of a Markdown file's text. "" if none. */
+function readSubstackUrl(fileText) {
+  const found = fileText.match(/^substackUrl:\s*"([^"]*)"/m);
+  if (!found) return "";
+  return normaliseUrl(found[1]);
+}
+
+/**
+ * Make two spellings of the same address compare as equal:
+ * no trailing slash, nothing after a "?", and lower case.
+ */
+function normaliseUrl(address) {
+  return address.split("?")[0].replace(/\/+$/, "").toLowerCase();
+}
+
+/**
+ * List every .md file directly inside a folder (not README.md),
+ * with its text. A folder that does not exist gives an empty list.
+ */
+async function readMarkdownFiles(folder) {
+  if (!existsSync(folder)) return [];
+
+  const names = await readdir(folder);
+  const files = [];
+
+  for (const name of names) {
+    if (!name.endsWith(".md") || name === "README.md") continue;
+
+    // Windows can add an invisible "\r" before each line break.
+    // It is removed so that comparing old and new text later on
+    // is not fooled by a difference nobody can see.
+    const text = (await readFile(path.join(folder, name), "utf8")).replace(/\r\n/g, "\n");
+    files.push({ name, text });
+  }
+
+  return files;
+}
+
+// ============================================================
 // STEP 4 — The main routine
 // ============================================================
 
@@ -428,17 +498,41 @@ async function main() {
   }
 
   // ---- Work out what has already been archived ----------------
-  // A post is identified by the slug part of its filename, with the
-  // date prefix removed. That way a post is never written twice
-  // even if its publication date is reported differently.
-  const existingFiles = await readdir(OUTPUT_DIRECTORY);
-  const existingSlugs = new Set(
-    existingFiles
-      .filter((name) => name.endsWith(".md"))
-      .map((name) => name.replace(/\.md$/, "").replace(/^\d{2}-\d{2}-\d{4}-/, "")),
-  );
+  // Two lookups are built from the files already in the folder:
+  //
+  //   archivedByUrl   Substack address -> the file it lives in.
+  //                   This is how an EDITED post finds its file.
+  //
+  //   existingSlugs   the slug part of every filename, with the
+  //                   date prefix removed. Only used as a safety
+  //                   net for a file with no substackUrl line, so
+  //                   that a post is never written twice.
+  const archivedFiles = await readMarkdownFiles(OUTPUT_DIRECTORY);
+  const archivedByUrl = new Map();
+  const existingSlugs = new Set();
+
+  for (const file of archivedFiles) {
+    const address = readSubstackUrl(file.text);
+    if (address) archivedByUrl.set(address, file);
+    existingSlugs.add(file.name.replace(/\.md$/, "").replace(/^\d{2}-\d{2}-\d{4}-/, ""));
+  }
+
+  // ---- Work out what the site already owns --------------------
+  // Essays and notes that carry a Substack address. Those posts are
+  // skipped, so a piece cross-posted to Substack never comes back
+  // as a duplicate in content/external/.
+  const ownedUrls = new Set();
+
+  for (const folder of OWNED_DIRECTORIES) {
+    const files = await readMarkdownFiles(folder);
+    for (const file of files) {
+      const address = readSubstackUrl(file.text);
+      if (address) ownedUrls.add(address);
+    }
+  }
 
   let written = 0;
+  let updated = 0;
   let skipped = 0;
 
   // ---- Write each new post ------------------------------------
@@ -452,15 +546,28 @@ async function main() {
       continue;
     }
 
+    const address = normaliseUrl(link);
+
+    // A piece the site owns as an essay or a note. Leave it alone.
+    if (ownedUrls.has(address)) {
+      skipped += 1;
+      continue;
+    }
+
+    // Is this post already archived? If so, remember which file,
+    // so it can be rewritten in place if the post was edited.
+    const existingFile = archivedByUrl.get(address);
+
     const slug = slugify(title);
-    if (!slug) {
+    if (!slug && !existingFile) {
       console.log(`Skipping "${title}" — its title produced no usable filename.`);
       continue;
     }
 
-    // NEVER overwrite. A file already here may have been corrected
-    // or moved by hand, and this script must not undo that.
-    if (existingSlugs.has(slug)) {
+    // Safety net: a file with this slug but no matching Substack
+    // address. Most likely an old file whose address line was
+    // removed by hand. It is not overwritten, to be safe.
+    if (!existingFile && existingSlugs.has(slug)) {
       skipped += 1;
       continue;
     }
@@ -500,16 +607,35 @@ async function main() {
       "---",
       "",
       "<!-- This file was written automatically from the Substack RSS feed.",
-      "     Do not edit it by hand: the archiver would not notice, and the",
-      "     change would be lost if the file were ever regenerated. To",
-      "     correct something, fix it in Substack and delete this file. -->",
+      "     Do not edit it by hand: the next sync would overwrite the change.",
+      "     To correct something, edit the post on Substack. The daily sync",
+      "     then rewrites this file to match. -->",
       "",
     ].join("\n");
 
+    const newText = frontmatter + markdown + "\n";
+
+    // ---- An edited post: rewrite its existing file -------------
+    // The same filename is kept, whatever the title now says, so
+    // the post's address on this site does not change.
+    if (existingFile) {
+      if (existingFile.text === newText) {
+        // Nothing changed on Substack. Leave the file alone.
+        skipped += 1;
+        continue;
+      }
+
+      await writeFile(path.join(OUTPUT_DIRECTORY, existingFile.name), newText, "utf8");
+      console.log(`  updated ${existingFile.name} (the post was edited on Substack)`);
+      updated += 1;
+      continue;
+    }
+
+    // ---- A new post: write a new file --------------------------
     const fileName = `${filenameDate(publishedDate)}-${slug}.md`;
     const filePath = path.join(OUTPUT_DIRECTORY, fileName);
 
-    await writeFile(filePath, frontmatter + markdown + "\n", "utf8");
+    await writeFile(filePath, newText, "utf8");
     existingSlugs.add(slug);
 
     console.log(`  wrote ${fileName}`);
@@ -518,7 +644,10 @@ async function main() {
 
   // ---- Say what happened --------------------------------------
   console.log("");
-  console.log(`Done. Wrote ${written} new post(s), left ${skipped} already-archived post(s) alone.`);
+  console.log(
+    `Done. Wrote ${written} new post(s), updated ${updated} edited post(s), ` +
+      `left ${skipped} unchanged post(s) alone.`,
+  );
 }
 
 // Run it. A completely unexpected failure still must not fail the
